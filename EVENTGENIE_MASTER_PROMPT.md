@@ -28,9 +28,9 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-25 |
-| Last completed task | T-03 |
+| Last completed task | T-04 |
 | Currently in progress | _none_ |
-| **NEXT TASK** | **T-04** |
+| **NEXT TASK** | **T-05** |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | _none yet_ |
 | Blockers | none |
@@ -290,7 +290,7 @@ eventgenie/
 
 - [x] **T-03** Implement `schemas.py` exactly as Section 6 plus unit tests (valid plan passes; bad sums and late tasks fail).
   *Acceptance:* tests pass.
-- [ ] **T-04** Implement `llm/base.py` and `llm/gemini.py` with retry/backoff, timeout, JSON-mode generation validated against a Pydantic schema, and token/latency capture.
+- [x] **T-04** Implement `llm/base.py` and `llm/gemini.py` with retry/backoff, timeout, JSON-mode generation validated against a Pydantic schema, and token/latency capture.
   *Acceptance:* a script prints a validated tiny schema object from a real call; unit test with a mocked client passes.
 - [ ] **T-05** Implement `tools/budget.py` (percent to amount, rounding fix so sum is exact) and `tools/scheduler.py` (offset to date, clamp, sort).
   *Acceptance:* property-style tests: sums exact, no date after event.
@@ -442,6 +442,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-25 | Antigravity Claude Opus | T-01 | Created repo skeleton: .gitignore, .env.example, requirements.txt, README.md, app/ with main.py + all sub-packages (llm, tools, rag, i18n), prompts/v1, knowledge/, assets/, eval/, tests/, data/, packages.txt | All skeleton files | pip install works, streamlit placeholder runs, pytest passes |
 | 2026-10-25 | Antigravity Claude Opus | T-02 | Added ruff, pytest, pre-commit config (.pre-commit-config.yaml), pyproject.toml, .github/workflows/ci.yml | .github/workflows/ci.yml, .pre-commit-config.yaml, pyproject.toml | ruff check + format pass, pytest passes |
 | 2026-10-25 | Antigravity Claude Opus | T-03 | Implemented schemas.py with all Pydantic models (BudgetLine, Task, VendorItem, IdeaSet, EventPlan) + model_validator for budget sums and date integrity. 30 unit tests. | app/schemas.py, tests/test_schemas.py | 30 tests pass, ruff clean |
+| 2026-10-25 | Antigravity Gemini 3.8 Flash | T-04 | Implemented app/config.py, app/llm/base.py, and app/llm/gemini.py with exponential backoff on 429/5xx, timeouts, Pydantic schema-validated JSON generation, token/latency capture, get_llm factory, test script, and 14 unit tests | app/config.py, app/llm/base.py, app/llm/gemini.py, app/llm/__init__.py, scripts/test_gemini_call.py, tests/test_llm_gemini.py | 44 tests pass, ruff clean, mocked and live test script ready |
 
 ---
 
