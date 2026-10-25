@@ -28,9 +28,9 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-25 |
-| Last completed task | T-01 |
+| Last completed task | T-02 |
 | Currently in progress | _none_ |
-| **NEXT TASK** | **T-02** |
+| **NEXT TASK** | **T-03** |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | _none yet_ |
 | Blockers | none |
@@ -283,7 +283,7 @@ eventgenie/
 
 - [x] **T-01** Create repo skeleton from Section 8, `.gitignore` (include `.env`, `data/*.db`, `__pycache__`), `requirements.txt`, `.env.example` (`GEMINI_API_KEY`, `LLM_PROVIDER`, `GROQ_API_KEY`), basic `README.md` stub.
   *Acceptance:* `pip install -r requirements.txt` works; `streamlit run app/main.py` shows a placeholder page.
-- [ ] **T-02** Add `ruff`, `pytest`, pre-commit config, and `.github/workflows/ci.yml` running lint + tests.
+- [x] **T-02** Add `ruff`, `pytest`, pre-commit config, and `.github/workflows/ci.yml` running lint + tests.
   *Acceptance:* CI passes on an empty test.
 
 ### PHASE 1: MVP (get something live early)
@@ -440,6 +440,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | Date | Agent | Task | What was done | Files touched | Notes for next agent |
 |---|---|---|---|---|---|
 | 2026-10-25 | Antigravity Claude Opus | T-01 | Created repo skeleton: .gitignore, .env.example, requirements.txt, README.md, app/ with main.py + all sub-packages (llm, tools, rag, i18n), prompts/v1, knowledge/, assets/, eval/, tests/, data/, packages.txt | All skeleton files | pip install works, streamlit placeholder runs, pytest passes |
+| 2026-10-25 | Antigravity Claude Opus | T-02 | Added ruff, pytest, pre-commit config (.pre-commit-config.yaml), pyproject.toml, .github/workflows/ci.yml | .github/workflows/ci.yml, .pre-commit-config.yaml, pyproject.toml | ruff check + format pass, pytest passes |
 
 ---
 
