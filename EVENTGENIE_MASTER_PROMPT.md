@@ -28,9 +28,9 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-25 |
-| Last completed task | T-07 |
+| Last completed task | T-08 |
 | Currently in progress | _none_ |
-| **NEXT TASK** | **T-08** |
+| **NEXT TASK** | **T-09** |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | _none yet_ |
 | Blockers | none |
@@ -298,7 +298,7 @@ eventgenie/
   *Acceptance:* returns a valid plan for all 3 event types without any LLM call.
 - [x] **T-07** Implement single-call-then-validate generation (`pipeline.generate_plan_v0`) with repair loop (max 2 retries, send validation error back) then fallback.
   *Acceptance:* with a real key, 3 sample inputs produce valid plans; with a bad/missing key, the fallback plan is returned and a notice is shown.
-- [ ] **T-08** Build Streamlit intake form (event type, date, guests, city, budget, currency, vibe, notes, **language selector**) and render budget table, timeline, vendor checklist, ideas, and assumptions expander. English UI only for now.
+- [x] **T-08** Build Streamlit intake form (event type, date, guests, city, budget, currency, vibe, notes, **language selector**) and render budget table, timeline, vendor checklist, ideas, and assumptions expander. English UI only for now.
   *Acceptance:* full flow works end to end locally.
 - [ ] **T-09** **Deploy v0** to Streamlit Community Cloud (or Hugging Face Spaces). Add key as a secret. Add "Estimates only, not real prices" notice.
   *Acceptance:* public URL works from a fresh browser. Record URL in Section 1.
@@ -446,6 +446,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-25 | Antigravity Gemini 3.8 Flash | T-05 | Implemented app/tools/budget.py (percentages to amounts, exact rounding reconciliation with contingency/largest absorption) and app/tools/scheduler.py (offset-to-date calculation, clamping, chronological sorting) plus Hypothesis property tests | app/tools/budget.py, app/tools/scheduler.py, app/tools/__init__.py, tests/test_tools_budget.py, tests/test_tools_scheduler.py | 58 tests pass (including 200 Hypothesis property runs), ruff clean |
 | 2026-10-25 | Antigravity Gemini 3.8 Flash | T-06 | Implemented fallback_plan(inputs) in app/pipeline.py with Section 7 benchmark budget distributions, timeline tasks, vendor checklists, and creative ideas for wedding, birthday, and community events | app/pipeline.py, app/schemas.py, tests/test_fallback_plan.py | 66 tests pass, all 3 event types verified without LLM call, ruff clean |
 | 2026-10-25 | Antigravity Gemini 3.8 Flash | T-07 | Implemented pipeline.generate_plan_v0 with 2-attempt repair loop, prompt template app/prompts/v1/plan_v0.md, schema validation, fallback handling with user notice, scripts/run_v0_sample.py, and unit tests | app/pipeline.py, app/prompts/v1/plan_v0.md, app/tools/budget.py, app/tools/scheduler.py, scripts/run_v0_sample.py, tests/test_pipeline_v0.py | 72 tests pass, sample script verified with missing/bad key fallback notices, ruff clean |
+| 2026-10-25 | Antigravity Gemini 3.8 Flash | T-08 | Built complete Streamlit intake form in app/main.py with event type, date, guests, budget, currency, city, vibe, notes, language selector, quick demo buttons, budget table with integrity check, scheduled timeline, vendor checklists, ideas, and observability expander; automated AppTest suite | app/main.py, tests/test_main_app.py | 75 tests pass, end-to-end flow verified locally, ruff clean |
 
 ---
 
