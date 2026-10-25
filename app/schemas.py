@@ -12,6 +12,20 @@ Lang = Literal["en", "hi", "kn", "te", "ta", "mr"]
 EventType = Literal["wedding", "birthday", "community"]
 
 
+class PlanInputs(BaseModel):
+    """User intake form inputs for generating or planning an event."""
+
+    event_type: EventType
+    event_date: date
+    guests: int = Field(gt=0)
+    total_budget: float = Field(gt=0)
+    currency: str = "INR"
+    city: str = ""
+    lang: Lang = "en"
+    vibe: str = ""
+    notes: str = ""
+
+
 class BudgetLine(BaseModel):
     """A single budget category line item."""
 
