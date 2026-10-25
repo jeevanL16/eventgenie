@@ -55,31 +55,22 @@ def calculate_budget(
     # Normalize input into dictionaries
     raw_items: list[dict[str, Any]] = []
     for item in lines:
-        if isinstance(item, BudgetLine):
-            raw_items.append(
-                {
-                    "key": item.key,
-                    "label": item.label,
-                    "percent": float(item.percent),
-                    "note": item.note,
-                }
-            )
-        elif isinstance(item, ProposedBudgetLine):
-            raw_items.append(
-                {
-                    "key": item.key,
-                    "label": item.label,
-                    "percent": float(item.percent),
-                    "note": item.note,
-                }
-            )
-        elif isinstance(item, dict):
+        if isinstance(item, dict):
             raw_items.append(
                 {
                     "key": str(item.get("key", "misc")),
                     "label": str(item.get("label", item.get("key", "Miscellaneous"))),
                     "percent": float(item.get("percent", 0.0)),
                     "note": str(item.get("note", "")),
+                }
+            )
+        elif hasattr(item, "key") and hasattr(item, "percent"):
+            raw_items.append(
+                {
+                    "key": str(item.key),
+                    "label": str(getattr(item, "label", item.key)),
+                    "percent": float(item.percent),
+                    "note": str(getattr(item, "note", "")),
                 }
             )
         else:

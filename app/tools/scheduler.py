@@ -50,23 +50,7 @@ def schedule_tasks(
     scheduled: list[Task] = []
 
     for item in tasks:
-        if isinstance(item, Task):
-            title = item.title
-            phase = item.phase
-            owner = item.owner
-            status = item.status
-            category_key = item.category_key
-            target_date = item.due_date
-        elif isinstance(item, ProposedTask):
-            title = item.title
-            phase = item.phase
-            owner = item.owner
-            status = item.status
-            category_key = item.category_key
-            # Convert positive offsets (e.g. 60) to days before event (-60)
-            offset = -abs(item.offset_days) if item.offset_days != 0 else 0
-            target_date = event_date + timedelta(days=offset)
-        elif isinstance(item, dict):
+        if isinstance(item, dict):
             title = str(item.get("title", "Untitled Task"))
             phase = str(item.get("phase", "Planning"))
             owner = str(item.get("owner", "Organizer"))
@@ -82,6 +66,22 @@ def schedule_tasks(
                 raw_offset = int(item.get("offset_days", 0))
                 offset = -abs(raw_offset) if raw_offset != 0 else 0
                 target_date = event_date + timedelta(days=offset)
+        elif hasattr(item, "due_date") and isinstance(item.due_date, date):
+            title = getattr(item, "title", "Untitled Task")
+            phase = getattr(item, "phase", "Planning")
+            owner = getattr(item, "owner", "Organizer")
+            status = getattr(item, "status", "todo")
+            category_key = getattr(item, "category_key", "general")
+            target_date = item.due_date
+        elif hasattr(item, "offset_days"):
+            title = getattr(item, "title", "Untitled Task")
+            phase = getattr(item, "phase", "Planning")
+            owner = getattr(item, "owner", "Organizer")
+            status = getattr(item, "status", "todo")
+            category_key = getattr(item, "category_key", "general")
+            offset_val = int(getattr(item, "offset_days", 0))
+            offset = -abs(offset_val) if offset_val != 0 else 0
+            target_date = event_date + timedelta(days=offset)
         else:
             raise TypeError(f"Unsupported task item type: {type(item)}")
 
