@@ -432,6 +432,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | D-2 | start | Streamlit first, Next.js only as stretch | Fastest path to a live, evaluated demo |
 | D-3 | start | Provider-agnostic LLM interface | Free-tier limits change; resilience and resume value |
 | D-4 | start | Guest list/RSVP/seating deprioritized | Scope creep, low resume value |
+| D-5 | 2026-10-28 | Upgrade from deprecated google-generativeai to google-genai SDK with gemini-2.5-flash | Google migrated to unified google-genai SDK; gemini-2.5-flash is the current recommended free-tier Flash model with native structured outputs |
 
 ---
 

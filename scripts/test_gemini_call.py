@@ -1,4 +1,7 @@
-"""Verification script to test Gemini LLM JSON-mode structured output."""
+"""Verification script to test Gemini LLM JSON-mode structured output.
+
+Uses the official google-genai unified SDK.
+"""
 
 import os
 import sys
@@ -37,6 +40,7 @@ def main() -> int:
         return 0
 
     print("Running real Gemini LLM call with structured schema validation...")
+    print(f"SDK: google-genai (unified) | Model: {config.GEMINI_MODEL}")
     llm = GeminiLLM(api_key=api_key)
 
     system_prompt = (

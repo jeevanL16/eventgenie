@@ -1,9 +1,12 @@
-"""Unit tests for GeminiLLM with mocked client and retry logic."""
+"""Unit tests for GeminiLLM with mocked client and retry logic.
+
+Tests the google-genai unified SDK integration (v2.x).
+"""
 
 from unittest.mock import MagicMock, patch
 
 import pytest
-from google.api_core import exceptions as google_exceptions
+from google.genai import errors as genai_errors
 from pydantic import BaseModel, Field
 
 from app.llm import (
@@ -30,9 +33,20 @@ class MockUsageMetadata:
 
 
 class MockResponse:
-    def __init__(self, text: str, usage=None):
+    def __init__(self, text: str, usage=None, parsed=None):
         self.text = text
         self.usage_metadata = usage or MockUsageMetadata()
+        self.parsed = parsed
+
+
+def _make_client_error(code: int, message: str) -> genai_errors.ClientError:
+    """Create a ClientError with the correct constructor signature."""
+    return genai_errors.ClientError(code, {"error": {"message": message}})
+
+
+def _make_server_error(code: int, message: str) -> genai_errors.ServerError:
+    """Create a ServerError with the correct constructor signature."""
+    return genai_errors.ServerError(code, {"error": {"message": message}})
 
 
 def test_missing_api_key_raises_auth_error():
@@ -45,14 +59,15 @@ def test_missing_api_key_raises_auth_error():
 
 
 def test_generate_json_success():
-    client = GeminiLLM(api_key="fake-key", model_name="gemini-1.5-flash")
+    with patch("google.genai.Client") as mock_client_cls:
+        mock_client_instance = MagicMock()
+        mock_resp = MockResponse(
+            '{"title": "Birthday Party", "guest_count": 25, "city": "Bengaluru"}'
+        )
+        mock_client_instance.models.generate_content.return_value = mock_resp
+        mock_client_cls.return_value = mock_client_instance
 
-    mock_resp = MockResponse('{"title": "Birthday Party", "guest_count": 25, "city": "Bengaluru"}')
-
-    with patch("google.generativeai.GenerativeModel") as mock_model_cls:
-        mock_instance = MagicMock()
-        mock_instance.generate_content.return_value = mock_resp
-        mock_model_cls.return_value = mock_instance
+        client = GeminiLLM(api_key="fake-key", model_name="gemini-2.5-flash")
 
         result = client.generate_json(
             system="You are an event planner.",
@@ -68,7 +83,7 @@ def test_generate_json_success():
 
         # Verify metadata
         assert client.last_metadata is not None
-        assert client.last_metadata.model == "gemini-1.5-flash"
+        assert client.last_metadata.model == "gemini-2.5-flash"
         assert client.last_metadata.latency_ms >= 0
         assert client.last_metadata.prompt_tokens == 12
         assert client.last_metadata.completion_tokens == 24
@@ -76,18 +91,36 @@ def test_generate_json_success():
         assert "Birthday Party" in client.last_metadata.raw_response
 
 
+def test_generate_json_uses_parsed_attribute():
+    """Test that the SDK's built-in parsed attribute is used when available."""
+    parsed_event = TinyEvent(title="Parsed Event", guest_count=50, city="Mumbai")
+
+    with patch("google.genai.Client") as mock_client_cls:
+        mock_client_instance = MagicMock()
+        mock_resp = MockResponse(
+            '{"title": "Parsed Event", "guest_count": 50, "city": "Mumbai"}',
+            parsed=parsed_event,
+        )
+        mock_client_instance.models.generate_content.return_value = mock_resp
+        mock_client_cls.return_value = mock_client_instance
+
+        client = GeminiLLM(api_key="fake-key")
+        result = client.generate_json("System", "Prompt", TinyEvent)
+
+        assert result is parsed_event
+        assert result.title == "Parsed Event"
+
+
 def test_generate_json_with_markdown_fences():
-    client = GeminiLLM(api_key="fake-key")
+    with patch("google.genai.Client") as mock_client_cls:
+        mock_client_instance = MagicMock()
+        mock_resp = MockResponse(
+            '```json\n{"title": "Anniversary Dinner", "guest_count": 10, "city": "Mumbai"}\n```'
+        )
+        mock_client_instance.models.generate_content.return_value = mock_resp
+        mock_client_cls.return_value = mock_client_instance
 
-    mock_resp = MockResponse(
-        '```json\n{"title": "Anniversary Dinner", "guest_count": 10, "city": "Mumbai"}\n```'
-    )
-
-    with patch("google.generativeai.GenerativeModel") as mock_model_cls:
-        mock_instance = MagicMock()
-        mock_instance.generate_content.return_value = mock_resp
-        mock_model_cls.return_value = mock_instance
-
+        client = GeminiLLM(api_key="fake-key")
         result = client.generate_json("System", "Prompt", TinyEvent)
         assert result.title == "Anniversary Dinner"
         assert result.guest_count == 10
@@ -95,16 +128,14 @@ def test_generate_json_with_markdown_fences():
 
 
 def test_generate_json_schema_validation_error():
-    client = GeminiLLM(api_key="fake-key")
+    with patch("google.genai.Client") as mock_client_cls:
+        mock_client_instance = MagicMock()
+        # guest_count <= 0 violates gt=0 constraint in TinyEvent
+        mock_resp = MockResponse('{"title": "Invalid Party", "guest_count": -5, "city": "Delhi"}')
+        mock_client_instance.models.generate_content.return_value = mock_resp
+        mock_client_cls.return_value = mock_client_instance
 
-    # guest_count <= 0 violates gt=0 constraint in TinyEvent
-    mock_resp = MockResponse('{"title": "Invalid Party", "guest_count": -5, "city": "Delhi"}')
-
-    with patch("google.generativeai.GenerativeModel") as mock_model_cls:
-        mock_instance = MagicMock()
-        mock_instance.generate_content.return_value = mock_resp
-        mock_model_cls.return_value = mock_instance
-
+        client = GeminiLLM(api_key="fake-key")
         with pytest.raises(LLMValidationError) as exc_info:
             client.generate_json("System", "Prompt", TinyEvent)
         assert "Failed to validate response against schema TinyEvent" in str(exc_info.value)
@@ -112,27 +143,25 @@ def test_generate_json_schema_validation_error():
 
 
 def test_generate_json_malformed_json_error():
-    client = GeminiLLM(api_key="fake-key")
-    mock_resp = MockResponse("This is not JSON at all!")
+    with patch("google.genai.Client") as mock_client_cls:
+        mock_client_instance = MagicMock()
+        mock_resp = MockResponse("This is not JSON at all!")
+        mock_client_instance.models.generate_content.return_value = mock_resp
+        mock_client_cls.return_value = mock_client_instance
 
-    with patch("google.generativeai.GenerativeModel") as mock_model_cls:
-        mock_instance = MagicMock()
-        mock_instance.generate_content.return_value = mock_resp
-        mock_model_cls.return_value = mock_instance
-
+        client = GeminiLLM(api_key="fake-key")
         with pytest.raises(LLMValidationError):
             client.generate_json("System", "Prompt", TinyEvent)
 
 
 def test_generate_text_success():
-    client = GeminiLLM(api_key="fake-key", model_name="gemini-1.5-flash")
-    mock_resp = MockResponse("Here are three themes for the party.")
+    with patch("google.genai.Client") as mock_client_cls:
+        mock_client_instance = MagicMock()
+        mock_resp = MockResponse("Here are three themes for the party.")
+        mock_client_instance.models.generate_content.return_value = mock_resp
+        mock_client_cls.return_value = mock_client_instance
 
-    with patch("google.generativeai.GenerativeModel") as mock_model_cls:
-        mock_instance = MagicMock()
-        mock_instance.generate_content.return_value = mock_resp
-        mock_model_cls.return_value = mock_instance
-
+        client = GeminiLLM(api_key="fake-key", model_name="gemini-2.5-flash")
         text = client.generate_text("System", "Generate ideas", temperature=0.7)
         assert text == "Here are three themes for the party."
         assert client.last_metadata is not None
@@ -140,85 +169,76 @@ def test_generate_text_success():
 
 
 def test_retry_on_429_success_after_retry():
-    client = GeminiLLM(api_key="fake-key", max_retries=2, initial_delay=0.01)
-
-    mock_resp = MockResponse("Success after 429")
-
-    with patch("google.generativeai.GenerativeModel") as mock_model_cls:
-        mock_instance = MagicMock()
-        # Fail once with ResourceExhausted (429), then succeed
-        mock_instance.generate_content.side_effect = [
-            google_exceptions.ResourceExhausted("Rate limit exceeded"),
+    with patch("google.genai.Client") as mock_client_cls:
+        mock_client_instance = MagicMock()
+        mock_resp = MockResponse("Success after 429")
+        # First call raises a 429 ClientError, then succeeds
+        rate_limit_err = _make_client_error(429, "Resource Exhausted: quota exceeded")
+        mock_client_instance.models.generate_content.side_effect = [
+            rate_limit_err,
             mock_resp,
         ]
-        mock_model_cls.return_value = mock_instance
+        mock_client_cls.return_value = mock_client_instance
 
+        client = GeminiLLM(api_key="fake-key", max_retries=2, initial_delay=0.01)
         result = client.generate_text("System", "Prompt")
         assert result == "Success after 429"
-        assert mock_instance.generate_content.call_count == 2
+        assert mock_client_instance.models.generate_content.call_count == 2
 
 
 def test_retry_on_429_exhausted_raises_rate_limit_error():
-    client = GeminiLLM(api_key="fake-key", max_retries=2, initial_delay=0.01)
+    with patch("google.genai.Client") as mock_client_cls:
+        mock_client_instance = MagicMock()
+        rate_limit_err = _make_client_error(429, "Resource Exhausted: quota exceeded")
+        mock_client_instance.models.generate_content.side_effect = rate_limit_err
+        mock_client_cls.return_value = mock_client_instance
 
-    with patch("google.generativeai.GenerativeModel") as mock_model_cls:
-        mock_instance = MagicMock()
-        mock_instance.generate_content.side_effect = google_exceptions.ResourceExhausted(
-            "Quota exceeded"
-        )
-        mock_model_cls.return_value = mock_instance
-
+        client = GeminiLLM(api_key="fake-key", max_retries=2, initial_delay=0.01)
         with pytest.raises(LLMRateLimitError, match="Gemini rate limit exceeded"):
             client.generate_text("System", "Prompt")
 
-        assert mock_instance.generate_content.call_count == 3  # initial + 2 retries
+        assert mock_client_instance.models.generate_content.call_count == 3  # initial + 2 retries
 
 
-def test_retry_on_503_service_unavailable():
-    client = GeminiLLM(api_key="fake-key", max_retries=1, initial_delay=0.01)
-
-    with patch("google.generativeai.GenerativeModel") as mock_model_cls:
-        mock_instance = MagicMock()
-        mock_instance.generate_content.side_effect = google_exceptions.ServiceUnavailable(
-            "Server down"
+def test_retry_on_server_error():
+    with patch("google.genai.Client") as mock_client_cls:
+        mock_client_instance = MagicMock()
+        mock_client_instance.models.generate_content.side_effect = _make_server_error(
+            503, "Service Unavailable"
         )
-        mock_model_cls.return_value = mock_instance
+        mock_client_cls.return_value = mock_client_instance
 
+        client = GeminiLLM(api_key="fake-key", max_retries=1, initial_delay=0.01)
         with pytest.raises(LLMError, match="Gemini server error after 1 retries"):
             client.generate_text("System", "Prompt")
 
-        assert mock_instance.generate_content.call_count == 2
+        assert mock_client_instance.models.generate_content.call_count == 2
 
 
 def test_retry_on_timeout():
-    client = GeminiLLM(api_key="fake-key", max_retries=1, initial_delay=0.01)
+    with patch("google.genai.Client") as mock_client_cls:
+        mock_client_instance = MagicMock()
+        mock_client_instance.models.generate_content.side_effect = TimeoutError("Request timed out")
+        mock_client_cls.return_value = mock_client_instance
 
-    with patch("google.generativeai.GenerativeModel") as mock_model_cls:
-        mock_instance = MagicMock()
-        mock_instance.generate_content.side_effect = google_exceptions.DeadlineExceeded(
-            "Deadline exceeded"
-        )
-        mock_model_cls.return_value = mock_instance
-
+        client = GeminiLLM(api_key="fake-key", max_retries=1, initial_delay=0.01)
         with pytest.raises(LLMTimeoutError, match="Gemini call timed out"):
             client.generate_text("System", "Prompt")
 
 
 def test_fatal_auth_error_not_retried():
-    client = GeminiLLM(api_key="fake-key", max_retries=3, initial_delay=0.01)
+    with patch("google.genai.Client") as mock_client_cls:
+        mock_client_instance = MagicMock()
+        auth_err = _make_client_error(403, "Permission Denied: API key not valid")
+        mock_client_instance.models.generate_content.side_effect = auth_err
+        mock_client_cls.return_value = mock_client_instance
 
-    with patch("google.generativeai.GenerativeModel") as mock_model_cls:
-        mock_instance = MagicMock()
-        mock_instance.generate_content.side_effect = google_exceptions.PermissionDenied(
-            "API key not valid"
-        )
-        mock_model_cls.return_value = mock_instance
-
+        client = GeminiLLM(api_key="fake-key", max_retries=3, initial_delay=0.01)
         with pytest.raises(LLMAuthError, match="Authentication failed"):
             client.generate_text("System", "Prompt")
 
         # Must not retry fatal auth errors
-        assert mock_instance.generate_content.call_count == 1
+        assert mock_client_instance.models.generate_content.call_count == 1
 
 
 def test_get_llm_factory():
@@ -256,11 +276,11 @@ def test_script_main_with_api_key_and_mock(capsys):
     with (
         patch.dict("os.environ", {"GEMINI_API_KEY": "dummy-key"}),
         patch("app.config.GEMINI_API_KEY", "dummy-key"),
-        patch("google.generativeai.GenerativeModel") as mock_model_cls,
+        patch("google.genai.Client") as mock_client_cls,
     ):
-        mock_instance = MagicMock()
-        mock_instance.generate_content.return_value = mock_resp
-        mock_model_cls.return_value = mock_instance
+        mock_client_instance = MagicMock()
+        mock_client_instance.models.generate_content.return_value = mock_resp
+        mock_client_cls.return_value = mock_client_instance
 
         code = script.main()
         assert code == 0

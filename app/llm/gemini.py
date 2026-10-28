@@ -1,4 +1,9 @@
-"""Google Gemini LLM implementation with retry, backoff, and schema validation."""
+"""Google Gemini LLM implementation using the official google-genai unified SDK.
+
+Migrated from deprecated `google-generativeai` to `google-genai` (Oct 2026).
+Uses `genai.Client` pattern with per-call model specification and
+`types.GenerateContentConfig` for structured JSON output.
+"""
 
 import json
 import logging
@@ -8,9 +13,9 @@ import time
 from collections.abc import Callable
 from typing import Any, TypeVar
 
-import google.generativeai as genai
-from google.api_core import exceptions as google_exceptions
-from google.generativeai.types import GenerationConfig, RequestOptions
+from google import genai
+from google.genai import errors as genai_errors
+from google.genai import types
 from pydantic import BaseModel, ValidationError
 
 from app import config
@@ -29,7 +34,11 @@ T = TypeVar("T", bound=BaseModel)
 
 
 class GeminiLLM:
-    """Gemini API client supporting structured JSON generation and plain text."""
+    """Gemini API client supporting structured JSON generation and plain text.
+
+    Uses the unified `google-genai` SDK with explicit Client instantiation
+    and per-call model specification.
+    """
 
     def __init__(
         self,
@@ -48,14 +57,21 @@ class GeminiLLM:
         self.backoff_multiplier = backoff_multiplier
         self.last_metadata: LLMMetadata | None = None
 
+        # Initialize the unified genai.Client
+        self._client: genai.Client | None = None
         if self.api_key:
-            genai.configure(api_key=self.api_key)
+            self._client = genai.Client(
+                api_key=self.api_key,
+                http_options=types.HttpOptions(timeout=int(self.timeout * 1000)),
+            )
 
     def _ensure_authenticated(self) -> None:
         if not self.api_key:
             raise LLMAuthError(
                 "GEMINI_API_KEY is not configured. Please set GEMINI_API_KEY in your .env file."
             )
+        if self._client is None:
+            raise LLMAuthError("Gemini client not initialized. Check API key configuration.")
 
     @staticmethod
     def _clean_json_text(text: str) -> str:
@@ -66,6 +82,25 @@ class GeminiLLM:
         cleaned = re.sub(r"\s*```$", "", cleaned)
         return cleaned.strip()
 
+    def _classify_client_error(self, e: genai_errors.ClientError) -> None:
+        """Map ClientError HTTP status codes to our custom exception hierarchy."""
+        code = getattr(e, "code", None) or getattr(e, "status", None)
+        message = str(e)
+
+        # Check for auth-related errors (401, 403)
+        if code in (401, 403) or any(
+            kw in message.lower()
+            for kw in ("unauthorized", "permission denied", "forbidden", "api key not valid")
+        ):
+            raise LLMAuthError(f"Authentication failed: {e}") from e
+
+        # Check for rate limit (429)
+        if code == 429 or "resource exhausted" in message.lower() or "quota" in message.lower():
+            raise LLMRateLimitError(f"Rate limit exceeded: {e}") from e
+
+        # Other 4xx client errors are non-retryable
+        raise LLMError(f"Gemini client error: {e}") from e
+
     def _execute_with_retry(self, fn: Callable[[], Any]) -> Any:
         """Execute a call with exponential backoff on retryable status codes."""
         last_exception: Exception | None = None
@@ -73,33 +108,50 @@ class GeminiLLM:
         for attempt in range(self.max_retries + 1):
             try:
                 return fn()
-            except (
-                google_exceptions.Unauthenticated,
-                google_exceptions.PermissionDenied,
-            ) as e:
-                # Fatal auth error — do not retry
-                raise LLMAuthError(f"Authentication failed: {e}") from e
-            except google_exceptions.ResourceExhausted as e:
-                last_exception = e
-                if attempt >= self.max_retries:
-                    raise LLMRateLimitError(
-                        f"Gemini rate limit exceeded after {self.max_retries} retries: {e}"
-                    ) from e
-                delay = (self.initial_delay * (self.backoff_multiplier**attempt)) + random.uniform(
-                    0.0, 0.3
-                )
-                logger.warning(
-                    "Rate limit hit (429). Retrying attempt %d/%d in %.2fs...",
-                    attempt + 1,
-                    self.max_retries,
-                    delay,
-                )
-                time.sleep(delay)
-            except (
-                google_exceptions.ServiceUnavailable,
-                google_exceptions.InternalServerError,
-                google_exceptions.BadGateway,
-            ) as e:
+            except genai_errors.ClientError as e:
+                # Classify the client error
+                code = getattr(e, "code", None) or getattr(e, "status", None)
+                message = str(e)
+
+                # Auth errors — do not retry
+                if code in (401, 403) or any(
+                    kw in message.lower()
+                    for kw in (
+                        "unauthorized",
+                        "permission denied",
+                        "forbidden",
+                        "api key not valid",
+                    )
+                ):
+                    raise LLMAuthError(f"Authentication failed: {e}") from e
+
+                # Rate limit (429) — retry with backoff
+                if (
+                    code == 429
+                    or "resource exhausted" in message.lower()
+                    or "quota" in message.lower()
+                ):
+                    last_exception = e
+                    if attempt >= self.max_retries:
+                        raise LLMRateLimitError(
+                            f"Gemini rate limit exceeded after {self.max_retries} retries: {e}"
+                        ) from e
+                    delay = (
+                        self.initial_delay * (self.backoff_multiplier**attempt)
+                    ) + random.uniform(0.0, 0.3)
+                    logger.warning(
+                        "Rate limit hit (429). Retrying attempt %d/%d in %.2fs...",
+                        attempt + 1,
+                        self.max_retries,
+                        delay,
+                    )
+                    time.sleep(delay)
+                    continue
+
+                # Other client errors (400, 404, etc.) — do not retry
+                raise LLMError(f"Gemini client error: {e}") from e
+
+            except genai_errors.ServerError as e:
                 last_exception = e
                 if attempt >= self.max_retries:
                     raise LLMError(
@@ -116,10 +168,8 @@ class GeminiLLM:
                     delay,
                 )
                 time.sleep(delay)
-            except (
-                google_exceptions.DeadlineExceeded,
-                TimeoutError,
-            ) as e:
+
+            except TimeoutError as e:
                 last_exception = e
                 if attempt >= self.max_retries:
                     raise LLMTimeoutError(
@@ -135,9 +185,7 @@ class GeminiLLM:
                     delay,
                 )
                 time.sleep(delay)
-            except google_exceptions.GoogleAPIError as e:
-                last_exception = e
-                raise LLMError(f"Gemini API error: {e}") from e
+
             except Exception as e:
                 last_exception = e
                 raise LLMError(f"Unexpected error during Gemini call: {e}") from e
@@ -166,26 +214,21 @@ class GeminiLLM:
     ) -> T:
         """Generate structured output validated against a Pydantic schema."""
         self._ensure_authenticated()
+        assert self._client is not None  # guaranteed by _ensure_authenticated
 
-        model = genai.GenerativeModel(
-            model_name=self.model_name,
-            system_instruction=system if system else None,
-        )
-
-        gen_config = GenerationConfig(
+        gen_config = types.GenerateContentConfig(
             temperature=temperature,
             response_mime_type="application/json",
             response_schema=schema,
+            system_instruction=system if system else None,
         )
-
-        request_options = RequestOptions(timeout=self.timeout)
 
         start_time = time.perf_counter()
         response = self._execute_with_retry(
-            lambda: model.generate_content(
-                prompt,
-                generation_config=gen_config,
-                request_options=request_options,
+            lambda: self._client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=gen_config,
             )
         )
         latency_ms = (time.perf_counter() - start_time) * 1000.0
@@ -202,6 +245,12 @@ class GeminiLLM:
             raw_response=raw_text,
         )
 
+        # Try the SDK's built-in parsed attribute first (auto-Pydantic parsing)
+        parsed = getattr(response, "parsed", None)
+        if parsed is not None and isinstance(parsed, schema):
+            return parsed
+
+        # Fall back to manual JSON parsing
         clean_text = self._clean_json_text(raw_text)
 
         try:
@@ -221,21 +270,19 @@ class GeminiLLM:
     ) -> str:
         """Generate unstructured free text."""
         self._ensure_authenticated()
+        assert self._client is not None  # guaranteed by _ensure_authenticated
 
-        model = genai.GenerativeModel(
-            model_name=self.model_name,
+        gen_config = types.GenerateContentConfig(
+            temperature=temperature,
             system_instruction=system if system else None,
         )
 
-        gen_config = GenerationConfig(temperature=temperature)
-        request_options = RequestOptions(timeout=self.timeout)
-
         start_time = time.perf_counter()
         response = self._execute_with_retry(
-            lambda: model.generate_content(
-                prompt,
-                generation_config=gen_config,
-                request_options=request_options,
+            lambda: self._client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=gen_config,
             )
         )
         latency_ms = (time.perf_counter() - start_time) * 1000.0
