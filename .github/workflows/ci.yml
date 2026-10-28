@@ -30,4 +30,17 @@ jobs:
         run: ruff format --check .
 
       - name: Run tests
-        run: python -m pytest tests/ -v
+        run: |
+          python -m pytest tests/ -v --tb=short 2>&1 | tee pytest-log.txt
+        shell: bash
+
+      - name: Publish Test Summary
+        if: always()
+        run: |
+          if [ -f pytest-log.txt ]; then
+            echo "### Pytest Output" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            tail -n 100 pytest-log.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+        shell: bash
