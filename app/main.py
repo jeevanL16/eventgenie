@@ -5,9 +5,12 @@ instant budget breakdown, backward-scheduled timeline, vendor checklist,
 and creative ideas.
 """
 
+import os  # noqa: E402
 import sys
 from datetime import date, timedelta
 from pathlib import Path
+
+from dotenv import load_dotenv  # noqa: E402
 
 # Ensure project root is in sys.path
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -81,6 +84,8 @@ def format_currency(amount: float, currency: str) -> str:
 
 
 def main():
+    load_dotenv(override=True)
+
     # Top Application Header
     st.markdown('<div class="main-header">✨ EventGenie</div>', unsafe_allow_html=True)
     st.markdown(
@@ -102,6 +107,8 @@ def main():
 
     with col_form:
         st.subheader("📋 Event Details")
+        active_model = os.getenv("GEMINI_MODEL", "gemini-flash-lite-latest")
+        st.caption(f"🤖 LLM Engine: `{active_model}`")
 
         with st.form("event_intake_form"):
             event_type_choice = st.selectbox(

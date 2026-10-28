@@ -15,9 +15,11 @@ from pydantic import BaseModel, ValidationError
 from app import config
 from app.llm import (
     LLM,
+    GeminiLLM,
     LLMAuthError,
     LLMError,
     LLMMetadata,
+    LLMRateLimitError,
     LLMValidationError,
     get_llm,
 )
@@ -665,6 +667,38 @@ def generate_plan_v0(
                 )
             else:
                 logger.error("All %d repair attempts exhausted.", max_repairs)
+
+        except LLMRateLimitError as e:
+            last_error = e
+            # Auto-fallback from primary model to high-quota flash-lite model
+            current_model = getattr(client, "model_name", "")
+            if current_model != "gemini-flash-lite-latest":
+                logger.warning(
+                    "Model %s quota exceeded (%s). Auto-fallback to gemini-flash-lite-latest...",
+                    current_model,
+                    e,
+                )
+                try:
+                    fallback_client = GeminiLLM(model_name="gemini-flash-lite-latest")
+                    proposal = fallback_client.generate_json(
+                        system=system_prompt,
+                        prompt=current_prompt,
+                        schema=PlanProposalV0,
+                        temperature=0.3,
+                    )
+                    plan = _assemble_event_plan(proposal, validated_inputs)
+                    return GenerationResult(
+                        plan=plan,
+                        is_fallback=False,
+                        notices=[
+                            f"Notice: Primary model ({current_model}) daily free quota was reached. Automatically generated using gemini-flash-lite-latest."
+                        ],
+                        metadata=getattr(fallback_client, "last_metadata", None),
+                    )
+                except Exception as fb_err:
+                    logger.warning("Fallback model also failed: %s", fb_err)
+                    last_error = fb_err
+            break
 
         except (LLMAuthError, LLMError) as e:
             last_error = e
