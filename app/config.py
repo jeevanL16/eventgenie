@@ -10,16 +10,31 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+def _get_setting(key: str, default: str = "") -> str:
+    """Retrieve setting from environment or Streamlit secrets with fallback."""
+    val = os.getenv(key)
+    if not val:
+        try:
+            import streamlit as st
+
+            if hasattr(st, "secrets") and key in st.secrets:
+                val = str(st.secrets[key])
+        except Exception:
+            pass
+    return val if val is not None else default
+
+
 # LLM provider settings
-LLM_PROVIDER = os.getenv("LLM_PROVIDER", "gemini").lower()
+LLM_PROVIDER = _get_setting("LLM_PROVIDER", "gemini").lower()
 
 # Gemini configuration
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_API_KEY = _get_setting("GEMINI_API_KEY", "")
+GEMINI_MODEL = _get_setting("GEMINI_MODEL", "gemini-2.5-flash")
 
 # Groq configuration
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+GROQ_API_KEY = _get_setting("GROQ_API_KEY", "")
+GROQ_MODEL = _get_setting("GROQ_MODEL", "llama-3.3-70b-versatile")
 
 # Default network / retry parameters
 LLM_TIMEOUT_SECONDS = float(os.getenv("LLM_TIMEOUT_SECONDS", "30.0"))
