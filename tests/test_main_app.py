@@ -1,10 +1,14 @@
 """End-to-end tests for the Streamlit intake form and plan rendering."""
 
+from pathlib import Path
+
 from streamlit.testing.v1 import AppTest
+
+MAIN_APP_PATH = str(Path(__file__).resolve().parent.parent / "app" / "main.py")
 
 
 def test_app_initial_render():
-    at = AppTest.from_file("app/main.py")
+    at = AppTest.from_file(MAIN_APP_PATH)
     at.run()
     assert not at.exception
     # Check that main title and disclaimer are rendered
@@ -14,7 +18,7 @@ def test_app_initial_render():
 
 
 def test_app_demo_button_generates_and_renders_plan():
-    at = AppTest.from_file("app/main.py")
+    at = AppTest.from_file(MAIN_APP_PATH)
     at.run()
     assert not at.exception
 
@@ -38,7 +42,7 @@ def test_app_demo_button_generates_and_renders_plan():
 
 
 def test_app_form_submission_generates_plan():
-    at = AppTest.from_file("app/main.py")
+    at = AppTest.from_file(MAIN_APP_PATH)
     at.run()
     assert not at.exception
 
