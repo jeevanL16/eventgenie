@@ -205,6 +205,33 @@ class GeminiLLM:
             logger.debug("Could not parse usage metadata: %s", e)
         return 0, 0, 0
 
+    @staticmethod
+    def _prepare_response_schema(schema: Any) -> Any:
+        """Sanitize Pydantic schemas for google-genai OpenAPI compatibility.
+
+        Converts OpenAPI-incompatible fields (e.g. exclusiveMinimum/exclusiveMaximum
+        produced by Pydantic's gt/lt) into minimum/maximum so google.genai types.Schema
+        validation succeeds.
+        """
+        if isinstance(schema, type) and issubclass(schema, BaseModel):
+            schema_dict = schema.model_json_schema()
+
+            def _clean(d: Any) -> None:
+                if isinstance(d, dict):
+                    if "exclusiveMinimum" in d:
+                        d["minimum"] = d.pop("exclusiveMinimum")
+                    if "exclusiveMaximum" in d:
+                        d["maximum"] = d.pop("exclusiveMaximum")
+                    for v in d.values():
+                        _clean(v)
+                elif isinstance(d, list):
+                    for item in d:
+                        _clean(item)
+
+            _clean(schema_dict)
+            return schema_dict
+        return schema
+
     def generate_json(
         self,
         system: str,
@@ -216,10 +243,12 @@ class GeminiLLM:
         self._ensure_authenticated()
         assert self._client is not None  # guaranteed by _ensure_authenticated
 
+        prepared_schema = self._prepare_response_schema(schema)
+
         gen_config = types.GenerateContentConfig(
             temperature=temperature,
             response_mime_type="application/json",
-            response_schema=schema,
+            response_schema=prepared_schema,
             system_instruction=system if system else None,
         )
 
