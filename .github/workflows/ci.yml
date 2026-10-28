@@ -38,8 +38,8 @@ jobs:
         if: always()
         run: |
           if [ -f pytest-log.txt ]; then
-            while IFS= read -r line; do
-              echo "::error title=Pytest::$line"
-            done < <(tail -n 35 pytest-log.txt)
+            sed -n '/FAILURES/,$p' pytest-log.txt | head -n 50 | while IFS= read -r line; do
+              echo "::error title=Failure::$line"
+            done
           fi
         shell: bash
