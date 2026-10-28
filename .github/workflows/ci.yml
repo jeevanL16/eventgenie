@@ -38,9 +38,8 @@ jobs:
         if: always()
         run: |
           if [ -f pytest-log.txt ]; then
-            echo "### Pytest Output" >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            tail -n 100 pytest-log.txt >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
+            while IFS= read -r line; do
+              echo "::error title=Pytest::$line"
+            done < <(tail -n 35 pytest-log.txt)
           fi
         shell: bash
