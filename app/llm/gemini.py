@@ -169,24 +169,27 @@ class GeminiLLM:
                 )
                 time.sleep(delay)
 
-            except TimeoutError as e:
-                last_exception = e
-                if attempt >= self.max_retries:
-                    raise LLMTimeoutError(
-                        f"Gemini call timed out after {self.max_retries} retries: {e}"
-                    ) from e
-                delay = (self.initial_delay * (self.backoff_multiplier**attempt)) + random.uniform(
-                    0.0, 0.3
-                )
-                logger.warning(
-                    "Timeout occurred. Retrying attempt %d/%d in %.2fs...",
-                    attempt + 1,
-                    self.max_retries,
-                    delay,
-                )
-                time.sleep(delay)
-
             except Exception as e:
+                # Check for timeout errors from httpx / socket / urllib
+                if "timed out" in str(e).lower() or "timeout" in str(e).lower() or isinstance(e, TimeoutError):
+                    last_exception = e
+                    if attempt >= self.max_retries:
+                        raise LLMTimeoutError(
+                            f"Gemini call timed out after {self.max_retries} retries: {e}"
+                        ) from e
+                    delay = (self.initial_delay * (self.backoff_multiplier**attempt)) + random.uniform(
+                        0.0, 0.3
+                    )
+                    logger.warning(
+                        "Timeout occurred (%s). Retrying attempt %d/%d in %.2fs...",
+                        e,
+                        attempt + 1,
+                        self.max_retries,
+                        delay,
+                    )
+                    time.sleep(delay)
+                    continue
+
                 last_exception = e
                 raise LLMError(f"Unexpected error during Gemini call: {e}") from e
 
