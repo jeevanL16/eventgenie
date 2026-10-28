@@ -30,7 +30,7 @@ LLM_PROVIDER = _get_setting("LLM_PROVIDER", "gemini").lower()
 
 # Gemini configuration
 GEMINI_API_KEY = _get_setting("GEMINI_API_KEY", "")
-GEMINI_MODEL = _get_setting("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = _get_setting("GEMINI_MODEL", "gemini-flash-lite-latest")
 
 # Groq configuration
 GROQ_API_KEY = _get_setting("GROQ_API_KEY", "")
