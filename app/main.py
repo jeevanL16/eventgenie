@@ -5,13 +5,20 @@ instant budget breakdown, backward-scheduled timeline, vendor checklist,
 and creative ideas.
 """
 
+import sys
 from datetime import date, timedelta
+from pathlib import Path
 
-import pandas as pd
-import streamlit as st
+# Ensure project root is in sys.path
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
-from app.pipeline import generate_plan_v0
-from app.schemas import Lang, PlanInputs
+import pandas as pd  # noqa: E402
+import streamlit as st  # noqa: E402
+
+from app.pipeline import generate_plan_v0  # noqa: E402
+from app.schemas import Lang, PlanInputs  # noqa: E402
 
 # Page Configuration
 st.set_page_config(

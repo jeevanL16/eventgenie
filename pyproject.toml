@@ -12,3 +12,10 @@ quote-style = "double"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.pyrefly]
+python-interpreter-path = "C:/Users/Jeevan/AppData/Local/Programs/Python/Python311/python.exe"
+search-path = [
+  "C:/Users/Jeevan/AppData/Local/Programs/Python/Python311/Lib/site-packages",
+  "d:/eventgenie"
+]
