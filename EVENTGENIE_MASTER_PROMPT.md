@@ -28,13 +28,13 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-30 |
-| Last completed task | F-02 (Cloud-safe provider chain: default groq,gemini, skip missing keys) |
-| Currently in progress | F-03 (Read config from Streamlit secrets) |
-| **NEXT TASK** | **F-03** (Read config from st.secrets with env fallback, add .streamlit/secrets.toml.example) |
+| Last completed task | F-03 (Streamlit secrets config handling & secrets.toml.example) |
+| Currently in progress | F-04 (Honest provider and error display) |
+| **NEXT TASK** | **F-04** (Sanitize user-facing errors, friendly busy message, keep full error in logs) |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | _awaiting deployment URL from share.streamlit.io_ |
 | Blockers | none (remote pushed to https://github.com/jeevanL16/eventgenie.git) |
-| Half-done work / notes for next agent | F-01 and F-02 complete. Next: implement F-03 (Streamlit secrets config handling & secrets.toml.example). |
+| Half-done work / notes for next agent | F-01 through F-03 complete. Next: implement F-04 (clean user error presentation without raw 429 JSON dumps). |
 
 ---
 
@@ -312,7 +312,7 @@ eventgenie/
   *Acceptance:* no real key in any commit; report result.
 - [x] **F-02** Cloud-safe provider chain: default `LLM_CHAIN` to `"groq,gemini"`; skip missing-key providers instantly without delay; only use Ollama if explicitly in `LLM_CHAIN` or `OLLAMA_BASE_URL` is set.
   *Acceptance:* test proves missing key skips provider; test proves no keys + no Ollama returns fallback plan instantly.
-- [ ] **F-03** Read config from Streamlit secrets: env vars first, then `st.secrets` fallback; add `.streamlit/secrets.toml.example`; ensure `.streamlit/secrets.toml` is gitignored.
+- [x] **F-03** Read config from Streamlit secrets: env vars first, then `st.secrets` fallback; add `.streamlit/secrets.toml.example`; ensure `.streamlit/secrets.toml` is gitignored.
   *Acceptance:* tests prove `st.secrets` fallback works; app starts cleanly without secrets file.
 - [ ] **F-04** Honest provider and error display: sanitize user-facing errors (no raw 429 JSON dumps); show friendly notice in UI while preserving full error in logs/telemetry.
   *Acceptance:* test with simulated 429 verifies friendly message and no raw JSON in UI.
@@ -477,6 +477,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | T-09d | Added Bring-Your-Own-Key (BYOK) inputs to Streamlit sidebar (session-only, never persisted), active provider badge to metric ribbon, engine info to expander, and AppTests | app/main.py, tests/test_main_app.py, tests/test_llm_gemini.py, EVENTGENIE_MASTER_PROMPT.md | 4 AppTests pass, 98/98 unit tests pass, ruff clean |
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | F-01 | Secrets audit: scanned git commit history and tracked files for API keys; confirmed .env is gitignored and scripts/tests use only placeholders | EVENTGENIE_MASTER_PROMPT.md | Clean audit, no real keys in git history |
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | F-02 | Configured cloud-safe chain (default 'groq,gemini'); made Ollama conditional; added instant provider skipping on missing keys with 0 delay; 2 new acceptance tests | app/config.py, .env.example, app/llm/router.py, tests/test_llm_router.py, EVENTGENIE_MASTER_PROMPT.md | 7/7 router tests pass, ruff clean |
+| 2026-10-30 | Antigravity Gemini 3.8 Flash | F-03 | Implemented robust get_setting in app/config.py with env priority and safe st.secrets fallback; created .streamlit/secrets.toml.example; verified .streamlit/secrets.toml gitignored; added 4 unit tests | app/config.py, .streamlit/secrets.toml.example, tests/test_config.py, EVENTGENIE_MASTER_PROMPT.md | 4/4 config tests pass, ruff clean |
 
 ---
 

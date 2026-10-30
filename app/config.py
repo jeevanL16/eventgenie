@@ -11,18 +11,32 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-def _get_setting(key: str, default: str = "") -> str:
-    """Retrieve setting from environment or Streamlit secrets with fallback."""
+def get_setting(key: str, default: str = "") -> str:
+    """Retrieve setting from environment variables first, then Streamlit secrets."""
     val = os.getenv(key)
-    if not val:
-        try:
-            import streamlit as st
+    if val:
+        return val
 
-            if hasattr(st, "secrets") and key in st.secrets:
-                val = str(st.secrets[key])
-        except Exception:
-            pass
-    return val if val is not None else default
+    # Fallback to Streamlit secrets (safe when running locally or on Streamlit Cloud)
+    try:
+        import streamlit as st
+
+        if hasattr(st, "secrets"):
+            try:
+                if key in st.secrets:
+                    secret_val = st.secrets[key]
+                    if secret_val is not None:
+                        return str(secret_val)
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    return default
+
+
+# Alias for backward compatibility
+_get_setting = get_setting
 
 
 # LLM provider settings
