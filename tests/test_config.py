@@ -34,3 +34,4 @@ def test_get_setting_when_secrets_raises_file_not_found():
     with patch.dict("os.environ", {}, clear=True):
         with patch.dict("sys.modules", {"streamlit": mock_st}):
             assert get_setting("MISSING_KEY", default="fallback_val") == "fallback_val"
+

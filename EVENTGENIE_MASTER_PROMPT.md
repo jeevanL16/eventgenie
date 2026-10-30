@@ -28,13 +28,13 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-30 |
-| Last completed task | F-03 (Streamlit secrets config handling & secrets.toml.example) |
-| Currently in progress | F-04 (Honest provider and error display) |
-| **NEXT TASK** | **F-04** (Sanitize user-facing errors, friendly busy message, keep full error in logs) |
+| Last completed task | F-04 (Sanitized user-facing errors, friendly busy message, full error in logs) |
+| Currently in progress | F-05 (Model and docs consistency) |
+| **NEXT TASK** | **F-05** (Configure & verify Groq model via API, align Decision Log numbering, update README failover section) |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | _awaiting deployment URL from share.streamlit.io_ |
 | Blockers | none (remote pushed to https://github.com/jeevanL16/eventgenie.git) |
-| Half-done work / notes for next agent | F-01 through F-03 complete. Next: implement F-04 (clean user error presentation without raw 429 JSON dumps). |
+| Half-done work / notes for next agent | F-01 through F-04 complete. Raw error dumps replaced with polite user messages. Next: implement F-05 (model verification, Decision Log alignment, README update). |
 
 ---
 
@@ -314,7 +314,7 @@ eventgenie/
   *Acceptance:* test proves missing key skips provider; test proves no keys + no Ollama returns fallback plan instantly.
 - [x] **F-03** Read config from Streamlit secrets: env vars first, then `st.secrets` fallback; add `.streamlit/secrets.toml.example`; ensure `.streamlit/secrets.toml` is gitignored.
   *Acceptance:* tests prove `st.secrets` fallback works; app starts cleanly without secrets file.
-- [ ] **F-04** Honest provider and error display: sanitize user-facing errors (no raw 429 JSON dumps); show friendly notice in UI while preserving full error in logs/telemetry.
+- [x] **F-04** Honest provider and error display: sanitize user-facing errors (no raw 429 JSON dumps); show friendly notice in UI while preserving full error in logs/telemetry.
   *Acceptance:* test with simulated 429 verifies friendly message and no raw JSON in UI.
 - [ ] **F-05** Model and docs consistency: make default Groq model configurable and verified via API; fix Decision Log numbering (D-5 vs D-6) and log cloud chain decision; update README free-tier limits section.
   *Acceptance:* master prompt and README consistent with codebase.
@@ -478,6 +478,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | F-01 | Secrets audit: scanned git commit history and tracked files for API keys; confirmed .env is gitignored and scripts/tests use only placeholders | EVENTGENIE_MASTER_PROMPT.md | Clean audit, no real keys in git history |
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | F-02 | Configured cloud-safe chain (default 'groq,gemini'); made Ollama conditional; added instant provider skipping on missing keys with 0 delay; 2 new acceptance tests | app/config.py, .env.example, app/llm/router.py, tests/test_llm_router.py, EVENTGENIE_MASTER_PROMPT.md | 7/7 router tests pass, ruff clean |
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | F-03 | Implemented robust get_setting in app/config.py with env priority and safe st.secrets fallback; created .streamlit/secrets.toml.example; verified .streamlit/secrets.toml gitignored; added 4 unit tests | app/config.py, .streamlit/secrets.toml.example, tests/test_config.py, EVENTGENIE_MASTER_PROMPT.md | 4/4 config tests pass, ruff clean |
+| 2026-10-30 | Antigravity Gemini 3.8 Flash | F-04 | Implemented sanitize_error_message in app/pipeline.py to prevent raw JSON/429 RPC error dumps from leaking to UI; updated main.py warnings; added simulated 429 unit and AppTests | app/pipeline.py, app/main.py, tests/test_llm_router.py, tests/test_main_app.py, EVENTGENIE_MASTER_PROMPT.md | 14/14 tests pass, ruff clean |
 
 ---
 

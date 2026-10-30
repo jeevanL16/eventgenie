@@ -108,3 +108,44 @@ def test_app_sidebar_byok_and_provider_badge():
         assert not at.exception
         # Verify provider badge in rendered markdown
         assert any("Served by: GROQ" in m.value for m in at.markdown)
+
+
+def test_app_simulated_429_shows_clean_message_without_raw_json():
+    from app.llm.base import LLMRateLimitError
+
+    raw_dump = (
+        "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded', 'details': []}}"
+    )
+
+    def _mock_429(inputs, *args, **kwargs):
+        if isinstance(inputs, dict):
+            inputs = PlanInputs.model_validate(inputs)
+        plan = fallback_plan(inputs)
+        # Use our production sanitize_error_message
+        from app.pipeline import sanitize_error_message
+
+        friendly = sanitize_error_message(LLMRateLimitError(raw_dump))
+        return GenerationResult(
+            plan=plan,
+            is_fallback=True,
+            notices=[f"NOTICE: {friendly}"],
+            provider="fallback",
+        )
+
+    with patch("app.pipeline.generate_plan_v0", side_effect=_mock_429):
+        at = AppTest.from_file(MAIN_APP_PATH)
+        at.run(timeout=10)
+
+        # Trigger plan generation via sample button
+        wedding_btn = next((b for b in at.button if "Sample Wedding" in b.label), None)
+        assert wedding_btn is not None
+        wedding_btn.click().run(timeout=10)
+
+        assert not at.exception
+        # Verify friendly message is shown in warning
+        assert any("AI service is busy" in w.value for w in at.warning)
+        # Verify that no warning or caption contains raw JSON dumps
+        all_text = " ".join([w.value for w in at.warning] + [c.value for c in at.caption])
+        assert "RESOURCE_EXHAUSTED" not in all_text
+        assert "{'error'" not in all_text
+        assert "googleapis.com" not in all_text

@@ -325,7 +325,7 @@ def main():
             # Fallback or Informational Notices
             if result.is_fallback:
                 st.warning(
-                    "⚠️ **Benchmark Plan:** GenAI service currently unavailable; displaying verified deterministic benchmark plan."
+                    "⚠️ **Benchmark Plan:** AI service is busy, showing a benchmark plan. Try again later or add your own key in the sidebar."
                 )
 
             if result.notices:

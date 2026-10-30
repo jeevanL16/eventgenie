@@ -15,7 +15,6 @@ from pydantic import BaseModel, ValidationError
 from app import config
 from app.llm import (
     LLM,
-    GeminiLLM,
     LLMAuthError,
     LLMError,
     LLMMetadata,
@@ -557,6 +556,30 @@ def _assemble_event_plan(proposal: PlanProposalV0, inputs: PlanInputs) -> EventP
     )
 
 
+def sanitize_error_message(err: Exception | str | None) -> str:
+    """Transform raw provider or system errors into concise, user-friendly notices.
+
+    Ensures that raw API JSON payloads, stack traces, and internal quota details
+    are never leaked to users in the UI, keeping full diagnostics strictly in logs.
+    """
+    if not err:
+        return "AI service is busy, showing a benchmark plan. Try again later or add your own key in the sidebar."
+
+    err_str = str(err)
+    err_lower = err_str.lower()
+
+    if any(k in err_lower for k in ("429", "quota", "rate limit", "resource exhausted", "resource_exhausted")):
+        return "AI service is busy, showing a benchmark plan. Try again later or add your own key in the sidebar."
+
+    if any(k in err_lower for k in ("invalid api key", "auth", "api key", "unauthorized", "permission denied")):
+        return "Invalid API key or credentials. Showing benchmark plan. Enter your API key in the sidebar to generate custom plans."
+
+    if any(k in err_lower for k in ("timeout", "timed out", "timedout")):
+        return "AI service timed out. Showing benchmark plan. Try again later or add your own key in the sidebar."
+
+    return "AI service is busy, showing a benchmark plan. Try again later or add your own key in the sidebar."
+
+
 def generate_plan_v0(
     inputs: PlanInputs | dict[str, Any],
     llm: LLM | None = None,
@@ -596,13 +619,14 @@ def generate_plan_v0(
         except (LLMAuthError, Exception) as e:
             logger.warning("Could not instantiate LLM client: %s. Using fallback template.", e)
             plan = fallback_plan(validated_inputs)
-            notice = f"NOTICE: LLM provider unavailable ({e}). Showing benchmark fallback plan."
+            friendly_msg = sanitize_error_message(e)
+            notice = f"NOTICE: {friendly_msg}"
             plan.assumptions.insert(0, notice)
             return GenerationResult(plan=plan, is_fallback=True, notices=[notice])
 
     # Check if API key is present
     if not getattr(client, "api_key", None):
-        notice = "NOTICE: LLM API key is not configured. Showing benchmark fallback plan."
+        notice = "NOTICE: AI service key is not configured. Showing benchmark plan. Enter your API key in the sidebar to generate custom plans."
         plan = fallback_plan(validated_inputs)
         plan.assumptions.insert(0, notice)
         return GenerationResult(plan=plan, is_fallback=True, notices=[notice])
@@ -673,41 +697,9 @@ def generate_plan_v0(
             else:
                 logger.error("All %d repair attempts exhausted.", max_repairs)
 
-        except LLMRateLimitError as e:
+        except (LLMRateLimitError, LLMAuthError, LLMError) as e:
             last_error = e
-            # Auto-fallback from primary model to high-quota flash-lite model
-            current_model = getattr(client, "model_name", "")
-            if current_model != "gemini-flash-lite-latest":
-                logger.warning(
-                    "Model %s quota exceeded (%s). Auto-fallback to gemini-flash-lite-latest...",
-                    current_model,
-                    e,
-                )
-                try:
-                    fallback_client = GeminiLLM(model_name="gemini-flash-lite-latest")
-                    proposal = fallback_client.generate_json(
-                        system=system_prompt,
-                        prompt=current_prompt,
-                        schema=PlanProposalV0,
-                        temperature=0.3,
-                    )
-                    plan = _assemble_event_plan(proposal, validated_inputs)
-                    return GenerationResult(
-                        plan=plan,
-                        is_fallback=False,
-                        notices=[
-                            f"Notice: Primary model ({current_model}) daily free quota was reached. Automatically generated using gemini-flash-lite-latest."
-                        ],
-                        metadata=getattr(fallback_client, "last_metadata", None),
-                    )
-                except Exception as fb_err:
-                    logger.warning("Fallback model also failed: %s", fb_err)
-                    last_error = fb_err
-            break
-
-        except (LLMAuthError, LLMError) as e:
-            last_error = e
-            logger.warning("LLM call failed with error: %s. Switching to fallback plan.", e)
+            logger.warning("LLM call failed with %s: %s. Switching to fallback plan.", type(e).__name__, e)
             break
         except Exception as e:
             last_error = e
@@ -715,9 +707,9 @@ def generate_plan_v0(
             break
 
     # Fallback path if repairs exhausted or LLM failed
-    notice = (
-        f"NOTICE: GenAI generation unavailable ({last_error}). Showing benchmark fallback plan."
-    )
+    logger.error("All generation attempts failed. Using fallback template plan: %s", last_error)
+    friendly_msg = sanitize_error_message(last_error)
+    notice = f"NOTICE: {friendly_msg}"
     plan = fallback_plan(validated_inputs)
     plan.assumptions.insert(0, notice)
     return GenerationResult(
@@ -725,4 +717,5 @@ def generate_plan_v0(
         is_fallback=True,
         notices=[notice],
         metadata=getattr(client, "last_metadata", None),
+        provider="fallback",
     )
