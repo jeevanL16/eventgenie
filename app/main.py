@@ -20,6 +20,7 @@ if str(ROOT_DIR) not in sys.path:
 import pandas as pd  # noqa: E402
 import streamlit as st  # noqa: E402
 
+from app import config  # noqa: E402
 from app.pipeline import generate_plan_v0  # noqa: E402
 from app.schemas import Lang, PlanInputs  # noqa: E402
 
@@ -85,6 +86,41 @@ def format_currency(amount: float, currency: str) -> str:
 
 def main():
     load_dotenv(override=True)
+
+    # Sidebar: BYOK Configuration (Session-only, never logged or stored)
+    with st.sidebar:
+        st.markdown("### 🔑 Bring Your Own Key")
+        st.caption(
+            "Optional: Use your own free API keys. Keys remain strictly in session state memory and are never saved to disk or logged."
+        )
+        user_gemini_key = st.text_input(
+            "Google Gemini API Key",
+            type="password",
+            placeholder="AIzaSy...",
+            key="byok_gemini_key",
+            help="Enter your free Gemini key from Google AI Studio.",
+        )
+        user_groq_key = st.text_input(
+            "Groq API Key",
+            type="password",
+            placeholder="gsk_...",
+            key="byok_groq_key",
+            help="Enter your free Groq key from console.groq.com.",
+        )
+        st.markdown("---")
+        st.markdown("### ⚙️ Engine Info")
+        st.caption(f"Provider Chain: `{config.LLM_CHAIN}`")
+        if user_groq_key or user_gemini_key:
+            st.success("Session API key override active.")
+
+    def _resolve_session_llm():
+        g_key = st.session_state.get("byok_gemini_key", "").strip() or None
+        gr_key = st.session_state.get("byok_groq_key", "").strip() or None
+        if g_key or gr_key:
+            from app.llm.router import LLMRouter
+
+            return LLMRouter(gemini_api_key=g_key, groq_api_key=gr_key)
+        return None
 
     # Top Application Header
     st.markdown('<div class="main-header">✨ EventGenie</div>', unsafe_allow_html=True)
@@ -218,7 +254,7 @@ def main():
                 )
 
                 with st.spinner("Generating plan and computing deterministic allocations..."):
-                    result = generate_plan_v0(inputs)
+                    result = generate_plan_v0(inputs, llm=_resolve_session_llm())
                     st.session_state.current_result = result
 
     # Right Column: Plan Output Presentation
@@ -244,7 +280,9 @@ def main():
                         vibe="Royal Rajasthani heritage",
                         notes="Traditional ceremonies with sangeet evening",
                     )
-                    st.session_state.current_result = generate_plan_v0(demo_inputs)
+                    st.session_state.current_result = generate_plan_v0(
+                        demo_inputs, llm=_resolve_session_llm()
+                    )
                     st.rerun()
 
             with c2:
@@ -259,7 +297,9 @@ def main():
                         vibe="Outdoor picnic with arcade games",
                         notes="Fun themes and personalized return gifts",
                     )
-                    st.session_state.current_result = generate_plan_v0(demo_inputs)
+                    st.session_state.current_result = generate_plan_v0(
+                        demo_inputs, llm=_resolve_session_llm()
+                    )
                     st.rerun()
 
             with c3:
@@ -274,7 +314,9 @@ def main():
                         vibe="Eco-conscious cultural street festival",
                         notes="Volunteer-run stalls and youth talent show",
                     )
-                    st.session_state.current_result = generate_plan_v0(demo_inputs)
+                    st.session_state.current_result = generate_plan_v0(
+                        demo_inputs, llm=_resolve_session_llm()
+                    )
                     st.rerun()
 
         else:
@@ -290,10 +332,18 @@ def main():
                 for note in result.notices:
                     st.caption(f"ℹ️ {note}")
 
+            # Provider badge indicator
+            provider_badge = (
+                '<span class="badge-tag" style="background-color: #FEF3C7; color: #92400E;">⚡ Benchmark Fallback</span>'
+                if result.is_fallback
+                else f'<span class="badge-tag" style="background-color: #ECFDF5; color: #065F46;">🤖 Served by: {result.provider.upper() if result.provider else "LLM"}</span>'
+            )
+
             # Plan Summary Ribbon
             st.markdown(
                 f"""
                 <div class="metric-card">
+                    {provider_badge}
                     <span class="badge-tag">{plan.event_type.upper()}</span>
                     <span class="badge-tag">📍 {plan.city or "General Metro"}</span>
                     <span class="badge-tag">👥 {plan.guests} Guests</span>
@@ -425,9 +475,15 @@ def main():
                 for asm in plan.assumptions:
                     st.markdown(f"- {asm}")
 
+                st.markdown("---")
+                st.markdown("**Engine & Telemetry:**")
+                provider_display = (
+                    "Deterministic Fallback"
+                    if result.is_fallback
+                    else (result.provider.upper() if result.provider else "Standard LLM")
+                )
+                st.write(f"- Active Provider: `{provider_display}`")
                 if result.metadata:
-                    st.markdown("---")
-                    st.markdown("**LLM Telemetry:**")
                     st.write(f"- Model: `{result.metadata.model}`")
                     st.write(f"- Latency: `{result.metadata.latency_ms:.1f} ms`")
                     st.write(

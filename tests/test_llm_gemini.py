@@ -246,8 +246,21 @@ def test_get_llm_factory():
         gemini_client = get_llm("gemini")
         assert isinstance(gemini_client, GeminiLLM)
 
-    with pytest.raises(NotImplementedError, match="Groq provider is scheduled"):
-        get_llm("groq")
+    with patch("app.config.GROQ_API_KEY", "test-groq-key"):
+        groq_client = get_llm("groq")
+        from app.llm.groq import GroqLLM
+
+        assert isinstance(groq_client, GroqLLM)
+
+    ollama_client = get_llm("ollama")
+    from app.llm.ollama import OllamaLLM
+
+    assert isinstance(ollama_client, OllamaLLM)
+
+    router_client = get_llm("router")
+    from app.llm.router import LLMRouter
+
+    assert isinstance(router_client, LLMRouter)
 
     with pytest.raises(ValueError, match="Unsupported LLM provider"):
         get_llm("invalid-provider")

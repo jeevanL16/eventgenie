@@ -28,13 +28,13 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-30 |
-| Last completed task | T-09c (LLM router with ordered failover chain groq -> gemini -> ollama) |
-| Currently in progress | T-09d (BYOK sidebar input and active provider badge in UI) |
-| **NEXT TASK** | **T-09d** (Add sidebar bring-your-own-key session input and active provider UI badge) |
+| Last completed task | T-09d (BYOK sidebar input and active provider UI badge) |
+| Currently in progress | T-09 (Streamlit Community Cloud deployment) |
+| **NEXT TASK** | **T-09** (Deploy to Streamlit Cloud, set keys in secrets, verify public URL) |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | _awaiting deployment URL from share.streamlit.io_ |
-| Blockers | none |
-| Half-done work / notes for next agent | T-09a, T-09b, and T-09c completed and verified. Next: implement T-09d in app/main.py with session-only BYOK input in sidebar and active provider badge. |
+| Blockers | none (remote pushed to https://github.com/jeevanL16/eventgenie.git) |
+| Half-done work / notes for next agent | Tasks T-09a through T-09d complete. Router failover chain (Groq -> Gemini -> Ollama) fully tested and working. Ready to connect repo on share.streamlit.io. |
 
 ---
 
@@ -306,7 +306,7 @@ eventgenie/
   *Acceptance:* unit tests with mocked Ollama API pass; local or mock generation produces valid output.
 - [x] **T-09c** Implement `llm/router.py`: ordered provider chain from env var LLM_CHAIN (default "groq,gemini,ollama"), failover on 429/5xx/timeout, log which provider served each call, then fallback template plan.
   *Acceptance:* mocked tests prove failover order; with all providers failing, the fallback plan is returned with notice.
-- [ ] **T-09d** Add a "bring your own API key" input in the Streamlit sidebar (session-only, never stored or logged) and show the active provider in the UI.
+- [x] **T-09d** Add a "bring your own API key" input in the Streamlit sidebar (session-only, never stored or logged) and show the active provider in the UI.
   *Acceptance:* user can enter session keys in sidebar; UI displays active serving provider badge; no keys logged or persisted to disk.
 - [ ] **T-09** **Deploy v0** to Streamlit Community Cloud (or Hugging Face Spaces). Add key as a secret. Add "Estimates only, not real prices" notice.
   *Acceptance:* public URL works from a fresh browser. Record URL in Section 1.
@@ -462,6 +462,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | T-09a | Implemented GroqLLM in app/llm/groq.py with OpenAI-compatible API, schema validation, retry/backoff, token and latency logging; added unit tests and verified with live Groq call | app/llm/groq.py, app/llm/__init__.py, app/config.py, tests/test_llm_groq.py, scripts/test_groq_call.py, requirements.txt, .env.example, EVENTGENIE_MASTER_PROMPT.md | 8 unit tests pass, live structured call succeeded |
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | T-09b | Implemented OllamaLLM in app/llm/ollama.py for local offline inference/evals with REST chat API, JSON format mode, latency/token telemetry, and 8 unit tests | app/llm/ollama.py, app/llm/__init__.py, tests/test_llm_ollama.py, EVENTGENIE_MASTER_PROMPT.md | 8 unit tests pass, ruff clean |
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | T-09c | Implemented LLMRouter in app/llm/router.py with configurable LLM_CHAIN failover, per-provider error telemetry, GenerationResult provider tracking, and fallback plan integration | app/llm/router.py, app/llm/__init__.py, app/pipeline.py, tests/test_llm_router.py, EVENTGENIE_MASTER_PROMPT.md | 5 unit tests pass, live plan generation verified, ruff clean |
+| 2026-10-30 | Antigravity Gemini 3.8 Flash | T-09d | Added Bring-Your-Own-Key (BYOK) inputs to Streamlit sidebar (session-only, never persisted), active provider badge to metric ribbon, engine info to expander, and AppTests | app/main.py, tests/test_main_app.py, tests/test_llm_gemini.py, EVENTGENIE_MASTER_PROMPT.md | 4 AppTests pass, 98/98 unit tests pass, ruff clean |
 
 ---
 

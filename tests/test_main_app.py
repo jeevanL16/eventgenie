@@ -11,11 +11,16 @@ from app.schemas import PlanInputs
 MAIN_APP_PATH = str(Path(__file__).resolve().parent.parent / "app" / "main.py")
 
 
-def _mock_generate(inputs):
+def _mock_generate(inputs, *args, **kwargs):
     if isinstance(inputs, dict):
         inputs = PlanInputs.model_validate(inputs)
     plan = fallback_plan(inputs)
-    return GenerationResult(plan=plan, is_fallback=True, notices=["Deterministic mock for testing"])
+    return GenerationResult(
+        plan=plan,
+        is_fallback=True,
+        notices=["Deterministic mock for testing"],
+        provider="mock",
+    )
 
 
 def test_app_initial_render():
@@ -56,13 +61,13 @@ def test_app_demo_button_generates_and_renders_plan():
 def test_app_form_submission_generates_plan():
     with patch("app.pipeline.generate_plan_v0", side_effect=_mock_generate):
         at = AppTest.from_file(MAIN_APP_PATH)
-        at.run()
+        at.run(timeout=10)
         assert not at.exception
 
         # Submit form
         submit_btn = next((b for b in at.button if "Generate Event Plan" in b.label), None)
         assert submit_btn is not None
-        submit_btn.click().run()
+        submit_btn.click().run(timeout=10)
 
         assert not at.exception
         assert at.session_state["current_result"] is not None
@@ -71,3 +76,35 @@ def test_app_form_submission_generates_plan():
         assert plan.total_budget > 0
         assert len(plan.budget) > 0
         assert len(plan.timeline) > 0
+
+
+def test_app_sidebar_byok_and_provider_badge():
+    def _mock_llm_generate(inputs, llm=None):
+        if isinstance(inputs, dict):
+            inputs = PlanInputs.model_validate(inputs)
+        plan = fallback_plan(inputs)
+        return GenerationResult(
+            plan=plan,
+            is_fallback=False,
+            notices=[],
+            provider="groq",
+        )
+
+    with patch("app.pipeline.generate_plan_v0", side_effect=_mock_llm_generate):
+        at = AppTest.from_file(MAIN_APP_PATH)
+        at.run(timeout=10)
+        assert not at.exception
+
+        # Verify sidebar BYOK inputs exist
+        sidebar_keys = [w.key for w in at.sidebar.text_input]
+        assert "byok_gemini_key" in sidebar_keys
+        assert "byok_groq_key" in sidebar_keys
+
+        # Click demo button and verify active provider badge
+        wedding_btn = next((b for b in at.button if "Sample Wedding" in b.label), None)
+        assert wedding_btn is not None
+        wedding_btn.click().run(timeout=10)
+
+        assert not at.exception
+        # Verify provider badge in rendered markdown
+        assert any("Served by: GROQ" in m.value for m in at.markdown)
