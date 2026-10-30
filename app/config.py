@@ -27,7 +27,7 @@ def _get_setting(key: str, default: str = "") -> str:
 
 # LLM provider settings
 LLM_PROVIDER = _get_setting("LLM_PROVIDER", "router").lower()
-LLM_CHAIN = _get_setting("LLM_CHAIN", "groq,gemini,ollama")
+LLM_CHAIN = _get_setting("LLM_CHAIN", "groq,gemini")
 
 # Gemini configuration
 GEMINI_API_KEY = _get_setting("GEMINI_API_KEY", "")
@@ -37,8 +37,8 @@ GEMINI_MODEL = _get_setting("GEMINI_MODEL", "gemini-flash-lite-latest")
 GROQ_API_KEY = _get_setting("GROQ_API_KEY", "")
 GROQ_MODEL = _get_setting("GROQ_MODEL", "qwen/qwen3.8-27b")
 
-# Ollama configuration (local offline inference)
-OLLAMA_BASE_URL = _get_setting("OLLAMA_BASE_URL", "http://localhost:11434")
+# Ollama configuration (local offline inference; disabled by default in cloud)
+OLLAMA_BASE_URL = _get_setting("OLLAMA_BASE_URL", "")
 OLLAMA_MODEL = _get_setting("OLLAMA_MODEL", "llama3.2")
 
 # Default network / retry parameters

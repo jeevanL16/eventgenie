@@ -3,6 +3,7 @@
 Iterates through a configurable chain of LLM providers (e.g. Groq -> Gemini -> Ollama),
 failing over automatically upon 429 (rate limits), 5xx errors, timeouts, auth errors,
 or validation failures. Tracks telemetry and active provider history.
+Skips unconfigured providers instantly without delay.
 """
 
 import logging
@@ -41,7 +42,7 @@ class LLMRouter:
         """Initialize router with provider chain and optional explicit API keys.
 
         Args:
-            chain: List of provider names (e.g. ['groq', 'gemini', 'ollama']) or LLM instances.
+            chain: List of provider names (e.g. ['groq', 'gemini']) or LLM instances.
                    If None, reads from config.LLM_CHAIN.
             gemini_api_key: Optional override for Gemini API key (e.g. user session key).
             groq_api_key: Optional override for Groq API key (e.g. user session key).
@@ -79,15 +80,29 @@ class LLMRouter:
                 self.providers.append((name, item))
 
     def _build_provider_by_name(self, name: str) -> LLM | None:
-        """Build provider instance by name with any available session keys."""
+        """Build provider instance by name with any available session keys.
+
+        Skips providers without valid API keys or unconfigured endpoints immediately
+        without throwing errors or incurring latency.
+        """
         if name == "groq":
             api_key = self.groq_api_key or config.GROQ_API_KEY
+            if not api_key:
+                logger.info("Skipping Groq: GROQ_API_KEY is not configured.")
+                return None
             return GroqLLM(api_key=api_key)
         elif name == "gemini":
             api_key = self.gemini_api_key or config.GEMINI_API_KEY
+            if not api_key:
+                logger.info("Skipping Gemini: GEMINI_API_KEY is not configured.")
+                return None
             return GeminiLLM(api_key=api_key)
         elif name == "ollama":
-            return OllamaLLM()
+            # Ollama must be tried only if explicitly listed in LLM_CHAIN or if OLLAMA_BASE_URL is set
+            if not config.OLLAMA_BASE_URL:
+                logger.info("Skipping Ollama: OLLAMA_BASE_URL is not set.")
+                return None
+            return OllamaLLM(base_url=config.OLLAMA_BASE_URL)
         else:
             logger.warning("Unknown provider '%s' in LLM_CHAIN; skipping.", name)
             return None
@@ -103,9 +118,19 @@ class LLMRouter:
         self.failover_history.clear()
 
         if not self.providers:
-            raise LLMError("LLM router has no configured providers.")
+            raise LLMError("No active LLM providers configured in chain (missing API keys).")
 
         for name, provider in self.providers:
+            # Skip provider instantly if API key is missing
+            if hasattr(provider, "api_key") and not provider.api_key:
+                logger.info("Skipping provider '%s': API key is missing.", name)
+                self.failover_history.append({
+                    "provider": name,
+                    "error_type": "LLMAuthError",
+                    "error_message": "Skipped: API key not configured",
+                })
+                continue
+
             try:
                 logger.info("LLMRouter attempting generate_json with provider: %s", name)
                 result = provider.generate_json(
@@ -144,12 +169,12 @@ class LLMRouter:
                     "error_message": err_msg,
                 })
 
-        # All providers exhausted
+        # All providers exhausted or skipped
         summary = "; ".join(
             f"{item['provider']} ({item['error_type']}: {item['error_message']})"
             for item in self.failover_history
         )
-        raise LLMError(f"All LLM providers in chain failed: [{summary}]")
+        raise LLMError(f"All LLM providers in chain failed or were skipped: [{summary}]")
 
     def generate_text(
         self,
@@ -161,9 +186,19 @@ class LLMRouter:
         self.failover_history.clear()
 
         if not self.providers:
-            raise LLMError("LLM router has no configured providers.")
+            raise LLMError("No active LLM providers configured in chain (missing API keys).")
 
         for name, provider in self.providers:
+            # Skip provider instantly if API key is missing
+            if hasattr(provider, "api_key") and not provider.api_key:
+                logger.info("Skipping provider '%s': API key is missing.", name)
+                self.failover_history.append({
+                    "provider": name,
+                    "error_type": "LLMAuthError",
+                    "error_message": "Skipped: API key not configured",
+                })
+                continue
+
             try:
                 logger.info("LLMRouter attempting generate_text with provider: %s", name)
                 result = provider.generate_text(
@@ -201,9 +236,9 @@ class LLMRouter:
                     "error_message": err_msg,
                 })
 
-        # All providers exhausted
+        # All providers exhausted or skipped
         summary = "; ".join(
             f"{item['provider']} ({item['error_type']}: {item['error_message']})"
             for item in self.failover_history
         )
-        raise LLMError(f"All LLM providers in chain failed: [{summary}]")
+        raise LLMError(f"All LLM providers in chain failed or were skipped: [{summary}]")

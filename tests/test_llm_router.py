@@ -125,3 +125,56 @@ def test_pipeline_generate_plan_v0_fallback_when_router_fails_all():
     assert "All LLM providers in chain failed" in result.notices[0]
     assert result.plan.total_budget == 50000.0
     assert result.plan.event_type == "birthday"
+
+
+def test_router_skips_provider_with_missing_key():
+    mock_p1 = MagicMock()
+    mock_p1.api_key = ""  # Missing key
+    mock_p1.generate_json.side_effect = AssertionError("Should never be called when key is missing")
+
+    mock_p2 = MagicMock()
+    mock_p2.api_key = "valid-key"
+    mock_p2.generate_json.return_value = SampleSchema(title="Plan from P2", score=99)
+    mock_p2.last_metadata = LLMMetadata(model="m2", latency_ms=50.0)
+
+    router = LLMRouter(chain=[("groq", mock_p1), ("gemini", mock_p2)])
+    result = router.generate_json(system="sys", prompt="prompt", schema=SampleSchema)
+
+    assert result.title == "Plan from P2"
+    assert router.active_provider == "gemini"
+    mock_p1.generate_json.assert_not_called()
+    mock_p2.generate_json.assert_called_once()
+    assert len(router.failover_history) == 1
+    assert "Skipped: API key not configured" in router.failover_history[0]["error_message"]
+
+
+def test_router_no_keys_and_no_ollama_returns_fallback_instantly():
+    import time
+    from unittest.mock import patch
+
+    with (
+        patch("app.config.GROQ_API_KEY", ""),
+        patch("app.config.GEMINI_API_KEY", ""),
+        patch("app.config.OLLAMA_BASE_URL", ""),
+        patch("app.config.LLM_CHAIN", "groq,gemini"),
+    ):
+        router = LLMRouter()
+        assert len(router.providers) == 0
+
+        inputs = PlanInputs(
+            event_type="wedding",
+            event_date="2027-05-20",
+            guests=100,
+            total_budget=500000.0,
+            currency="INR",
+            city="Bengaluru",
+        )
+
+        start = time.perf_counter()
+        result = generate_plan_v0(inputs=inputs, llm=router)
+        elapsed = time.perf_counter() - start
+
+        assert elapsed < 0.2  # Must execute instantly without retry loops or timeouts
+        assert result.is_fallback is True
+        assert any("fallback" in n.lower() or "unavailable" in n.lower() for n in result.notices)
+        assert result.plan.total_budget == 500000.0
