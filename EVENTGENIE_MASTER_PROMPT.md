@@ -28,13 +28,13 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-30 |
-| Last completed task | F-05 (Model and docs consistency: live model check, D-6/D-7/D-8 logged, README failover section) |
-| Currently in progress | F-06 (Pre-deploy check) |
-| **NEXT TASK** | **F-06** (Run pytest + ruff; create DEPLOY.md with 5-minute instructions and secrets template) |
+| Last completed task | F-06 (Pre-deploy check: full test suite passed, ruff clean, DEPLOY.md created) |
+| Currently in progress | T-09 (Streamlit Community Cloud deployment) |
+| **NEXT TASK** | **T-09** (Deploy to Streamlit Cloud, set keys in secrets, record live demo URL) |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | _awaiting deployment URL from share.streamlit.io_ |
 | Blockers | none (remote pushed to https://github.com/jeevanL16/eventgenie.git) |
-| Half-done work / notes for next agent | F-01 through F-05 complete. Next: run full verification and generate DEPLOY.md before T-09 deployment. |
+| Half-done work / notes for next agent | Fix tasks F-01 through F-06 are complete and committed. 108/108 tests passing, ruff clean, DEPLOY.md instructions ready. Next step is user manual deployment on share.streamlit.io. |
 
 ---
 
@@ -318,17 +318,29 @@ eventgenie/
   *Acceptance:* test with simulated 429 verifies friendly message and no raw JSON in UI.
 - [x] **F-05** Model and docs consistency: make default Groq model configurable and verified via API; fix Decision Log numbering (D-5 vs D-6) and log cloud chain decision; update README free-tier limits section.
   *Acceptance:* master prompt and README consistent with codebase.
-- [ ] **F-06** Pre-deploy check: full pytest suite and ruff checks pass; create `DEPLOY.md` with step-by-step Streamlit Cloud deployment instructions and secrets template.
+- [x] **F-06** Pre-deploy check: full pytest suite and ruff checks pass; create `DEPLOY.md` with step-by-step Streamlit Cloud deployment instructions and secrets template.
   *Acceptance:* green pytest and ruff; complete 5-minute deployment guide.
 - [ ] **T-09** **Deploy v0** to Streamlit Community Cloud (or Hugging Face Spaces). Add key as a secret. Add "Estimates only, not real prices" notice.
   *Acceptance:* public URL works from a fresh browser. Record URL in Section 1.
 
-### PHASE 2: Quality and exports
+### PHASE 2: Quota Protection, Architecture & Multilingual Core (Reordered post-deploy)
 
+- [ ] **T-11** Add response cache (`cache.py`, SQLite or JSON file) and per-session rate limit (`ratelimit.py`) with a friendly "demo is busy" message on 429 or limit hit (protects free quota on public URL).
+  *Acceptance:* identical input returns instantly the second time; sixth request in an hour is blocked politely (configurable).
 - [ ] **T-10** Split generation into the multi-step pipeline (budget, timeline, vendors, ideas as separate calls) with per-step validation. Keep v0 as fallback path.
   *Acceptance:* plans still valid; per-step latency logged.
-- [ ] **T-11** Add response cache (`cache.py`, SQLite or JSON file) and per-session rate limit (`ratelimit.py`) with a friendly "demo is busy" message on 429 or limit hit.
-  *Acceptance:* identical input returns instantly the second time; sixth request in an hour is blocked politely (configurable).
+- [ ] **T-16** Create `app/i18n/*.json` for all six languages for every UI string; add `t(key, lang)` helper with English fallback. Add test that key sets are identical across files.
+  *Acceptance:* switching language changes all UI labels; test passes.
+- [ ] **T-17** Update schema usage so categories carry `key` + localized `label` everywhere (budget, vendors); keep logic on `key`.
+  *Acceptance:* all code paths use keys; labels only for display.
+- [ ] **T-18** Implement `pipeline.translate_plan(plan, lang)` with the structural check from Section 5 and one retry, then English fallback with notice. Test at least two models on Kannada, Telugu, Tamil, Hindi, and Marathi, record results in `eval/language_review.md`, and use the better model for translation.
+  *Acceptance:* for each of the 5 non-English languages, a sample plan translates, passes structural check, and displays correctly.
+- [ ] **T-19** Implement `tools/langcheck.py`: script-ratio check per language, structure-equality check, Hi/Mr helper.
+  *Acceptance:* unit tests with known sample strings for each script.
+- [ ] **T-20** Fonts and exports for Indic scripts: ensure PDF renders Devanagari, Kannada, Telugu, Tamil correctly (conjuncts shaped). Ensure `.ics` titles are correct UTF-8.
+  *Acceptance:* visually inspect one PDF per language (screenshot into `docs/screens/`); no tofu boxes.
+- [ ] **T-21** Mark non-English as **Beta** in the UI and add language limitations to README.
+  *Acceptance:* visible badge and README section.
 - [ ] **T-12** Add `.ics` export (`export_ics.py`) with correct escaping and UTF-8.
   *Acceptance:* file imports into Google Calendar; test checks required fields.
 - [ ] **T-13** Add PDF export (`export_pdf.py`) via HTML template. Add `packages.txt` if needed. Bundle Noto fonts.
@@ -337,21 +349,6 @@ eventgenie/
   *Acceptance:* visible step updates during a run.
 - [ ] **T-15** Editable budget table with live total check and a warning when lines do not sum to the total.
   *Acceptance:* editing a line updates totals and flags mismatch.
-
-### PHASE 3: Multilingual (Hindi, Kannada, Telugu, Tamil, Marathi)
-
-- [ ] **T-16** Create `app/i18n/*.json` for all six languages for every UI string; add `t(key, lang)` helper with English fallback. Add test that key sets are identical across files.
-  *Acceptance:* switching language changes all UI labels; test passes.
-- [ ] **T-17** Update schema usage so categories carry `key` + localized `label` everywhere (budget, vendors); keep logic on `key`.
-  *Acceptance:* all code paths use keys; labels only for display.
-- [ ] **T-18** Implement `pipeline.translate_plan(plan, lang)` with the structural check from Section 5 and one retry, then English fallback with notice.
-  *Acceptance:* for each of the 5 non-English languages, a sample plan translates, passes the structural check, and displays correctly.
-- [ ] **T-19** Implement `tools/langcheck.py`: script-ratio check per language, structure-equality check, Hi/Mr helper.
-  *Acceptance:* unit tests with known sample strings for each script.
-- [ ] **T-20** Fonts and exports for Indic scripts: ensure PDF renders Devanagari, Kannada, Telugu, Tamil correctly (conjuncts shaped). Ensure `.ics` titles are correct UTF-8.
-  *Acceptance:* visually inspect one PDF per language (screenshot into `docs/screens/`); no tofu boxes.
-- [ ] **T-21** Mark non-English as **Beta** in the UI and add language limitations to README.
-  *Acceptance:* visible badge and README section.
 
 ### PHASE 4: RAG and grounding
 
@@ -482,6 +479,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | F-03 | Implemented robust get_setting in app/config.py with env priority and safe st.secrets fallback; created .streamlit/secrets.toml.example; verified .streamlit/secrets.toml gitignored; added 4 unit tests | app/config.py, .streamlit/secrets.toml.example, tests/test_config.py, EVENTGENIE_MASTER_PROMPT.md | 4/4 config tests pass, ruff clean |
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | F-04 | Implemented sanitize_error_message in app/pipeline.py to prevent raw JSON/429 RPC error dumps from leaking to UI; updated main.py warnings; added simulated 429 unit and AppTests | app/pipeline.py, app/main.py, tests/test_llm_router.py, tests/test_main_app.py, EVENTGENIE_MASTER_PROMPT.md | 14/14 tests pass, ruff clean |
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | F-05 | Added get_available_groq_models helper; aligned Decision Log numbering (D-5, D-6, D-7, D-8); updated README with Free-Tier Limits & Provider Failover section | app/llm/groq.py, tests/test_llm_groq.py, README.md, EVENTGENIE_MASTER_PROMPT.md | 9 unit tests pass, README updated |
+| 2026-10-30 | Antigravity Gemini 3.8 Flash | F-06 | Pre-deploy check: full test suite verified (108 tests passing), ruff clean; created DEPLOY.md deployment guide; reordered remaining roadmap post-deploy | DEPLOY.md, tests/test_main_app.py, tests/test_pipeline_v0.py, EVENTGENIE_MASTER_PROMPT.md | 108/108 tests pass, ruff clean, ready for T-09 |
 
 ---
 

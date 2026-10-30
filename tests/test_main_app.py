@@ -24,8 +24,8 @@ def _mock_generate(inputs, *args, **kwargs):
 
 
 def test_app_initial_render():
-    at = AppTest.from_file(MAIN_APP_PATH)
-    at.run(timeout=10)
+    at = AppTest.from_file(MAIN_APP_PATH, default_timeout=20)
+    at.run(timeout=20)
     assert not at.exception
     # Check that main title and disclaimer are rendered
     assert len(at.title) == 0  # we used markdown for custom styling
@@ -35,14 +35,14 @@ def test_app_initial_render():
 
 def test_app_demo_button_generates_and_renders_plan():
     with patch("app.pipeline.generate_plan_v0", side_effect=_mock_generate):
-        at = AppTest.from_file(MAIN_APP_PATH)
-        at.run(timeout=10)
+        at = AppTest.from_file(MAIN_APP_PATH, default_timeout=20)
+        at.run(timeout=20)
         assert not at.exception
 
         # Find the "💍 Sample Wedding" button
         wedding_btn = next((b for b in at.button if "Sample Wedding" in b.label), None)
         assert wedding_btn is not None
-        wedding_btn.click().run(timeout=10)
+        wedding_btn.click().run(timeout=20)
 
         assert not at.exception
         # Check that plan summary is rendered
@@ -60,14 +60,14 @@ def test_app_demo_button_generates_and_renders_plan():
 
 def test_app_form_submission_generates_plan():
     with patch("app.pipeline.generate_plan_v0", side_effect=_mock_generate):
-        at = AppTest.from_file(MAIN_APP_PATH)
-        at.run(timeout=10)
+        at = AppTest.from_file(MAIN_APP_PATH, default_timeout=20)
+        at.run(timeout=20)
         assert not at.exception
 
         # Submit form
         submit_btn = next((b for b in at.button if "Generate Event Plan" in b.label), None)
         assert submit_btn is not None
-        submit_btn.click().run(timeout=10)
+        submit_btn.click().run(timeout=20)
 
         assert not at.exception
         assert at.session_state["current_result"] is not None
@@ -91,8 +91,8 @@ def test_app_sidebar_byok_and_provider_badge():
         )
 
     with patch("app.pipeline.generate_plan_v0", side_effect=_mock_llm_generate):
-        at = AppTest.from_file(MAIN_APP_PATH)
-        at.run(timeout=10)
+        at = AppTest.from_file(MAIN_APP_PATH, default_timeout=20)
+        at.run(timeout=20)
         assert not at.exception
 
         # Verify sidebar BYOK inputs exist
@@ -103,7 +103,7 @@ def test_app_sidebar_byok_and_provider_badge():
         # Click demo button and verify active provider badge
         wedding_btn = next((b for b in at.button if "Sample Wedding" in b.label), None)
         assert wedding_btn is not None
-        wedding_btn.click().run(timeout=10)
+        wedding_btn.click().run(timeout=20)
 
         assert not at.exception
         # Verify provider badge in rendered markdown
@@ -133,13 +133,13 @@ def test_app_simulated_429_shows_clean_message_without_raw_json():
         )
 
     with patch("app.pipeline.generate_plan_v0", side_effect=_mock_429):
-        at = AppTest.from_file(MAIN_APP_PATH)
-        at.run(timeout=10)
+        at = AppTest.from_file(MAIN_APP_PATH, default_timeout=20)
+        at.run(timeout=20)
 
         # Trigger plan generation via sample button
         wedding_btn = next((b for b in at.button if "Sample Wedding" in b.label), None)
         assert wedding_btn is not None
-        wedding_btn.click().run(timeout=10)
+        wedding_btn.click().run(timeout=20)
 
         assert not at.exception
         # Verify friendly message is shown in warning

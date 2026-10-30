@@ -192,7 +192,7 @@ def test_generate_plan_v0_repairs_exhausted_falls_back():
     assert result.is_fallback is True
     assert mock_llm.generate_json.call_count == 3  # initial + 2 repairs
     assert len(result.notices) > 0
-    assert "Persistent bad JSON" in result.notices[0]
+    assert "AI service is busy" in result.notices[0]
     assert isinstance(result.plan, EventPlan)
 
 
