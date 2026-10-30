@@ -26,7 +26,8 @@ def _get_setting(key: str, default: str = "") -> str:
 
 
 # LLM provider settings
-LLM_PROVIDER = _get_setting("LLM_PROVIDER", "gemini").lower()
+LLM_PROVIDER = _get_setting("LLM_PROVIDER", "router").lower()
+LLM_CHAIN = _get_setting("LLM_CHAIN", "groq,gemini,ollama")
 
 # Gemini configuration
 GEMINI_API_KEY = _get_setting("GEMINI_API_KEY", "")
@@ -34,7 +35,11 @@ GEMINI_MODEL = _get_setting("GEMINI_MODEL", "gemini-flash-lite-latest")
 
 # Groq configuration
 GROQ_API_KEY = _get_setting("GROQ_API_KEY", "")
-GROQ_MODEL = _get_setting("GROQ_MODEL", "llama-3.3-70b-versatile")
+GROQ_MODEL = _get_setting("GROQ_MODEL", "qwen/qwen3.8-27b")
+
+# Ollama configuration (local offline inference)
+OLLAMA_BASE_URL = _get_setting("OLLAMA_BASE_URL", "http://localhost:11434")
+OLLAMA_MODEL = _get_setting("OLLAMA_MODEL", "llama3.2")
 
 # Default network / retry parameters
 LLM_TIMEOUT_SECONDS = float(os.getenv("LLM_TIMEOUT_SECONDS", "30.0"))

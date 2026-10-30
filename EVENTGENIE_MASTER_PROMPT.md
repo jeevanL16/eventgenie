@@ -27,14 +27,14 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 
 | Field | Value |
 |---|---|
-| Last updated | 2026-10-28 |
-| Last completed task | T-08 (plus Gemini SDK migration & CI dev-deps fix) |
-| Currently in progress | T-09 (Streamlit Community Cloud deployment) |
-| **NEXT TASK** | **T-09** (Deploy to Streamlit Cloud, set GEMINI_API_KEY in secrets, record URL) |
+| Last updated | 2026-10-30 |
+| Last completed task | T-09a (Groq LLM provider with retry, schema validation, and token/latency capture) |
+| Currently in progress | T-09b (Ollama LLM provider for local dev and evals) |
+| **NEXT TASK** | **T-09b** (Implement llm/ollama.py with base URL, model config, retry/backoff, JSON mode) |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | _awaiting deployment URL from share.streamlit.io_ |
-| Blockers | none (remote pushed to https://github.com/jeevanL16/eventgenie.git) |
-| Half-done work / notes for next agent | Remote origin pushed to github.com/jeevanL16/eventgenie.git. Added requirements-dev.txt for CI testing (hypothesis), restored clean README.md encoding, all 76 tests pass. Ready to connect repo on share.streamlit.io. |
+| Blockers | none |
+| Half-done work / notes for next agent | T-09a completed and verified with mocked tests and live Groq API call. Next: implement Ollama provider in app/llm/ollama.py. |
 
 ---
 
@@ -300,6 +300,14 @@ eventgenie/
   *Acceptance:* with a real key, 3 sample inputs produce valid plans; with a bad/missing key, the fallback plan is returned and a notice is shown.
 - [x] **T-08** Build Streamlit intake form (event type, date, guests, city, budget, currency, vibe, notes, **language selector**) and render budget table, timeline, vendor checklist, ideas, and assumptions expander. English UI only for now.
   *Acceptance:* full flow works end to end locally.
+- [x] **T-09a** Implement `llm/groq.py` (OpenAI-compatible API, model configurable by env var, same LLM protocol, retry/backoff, token and latency logging).
+  *Acceptance:* unit tests with mocked Groq client pass; with GROQ_API_KEY set, generates valid structured output and text.
+- [ ] **T-09b** Implement `llm/ollama.py` (local, base URL and model configurable) for dev and evals.
+  *Acceptance:* unit tests with mocked Ollama API pass; local or mock generation produces valid output.
+- [ ] **T-09c** Implement `llm/router.py`: ordered provider chain from env var LLM_CHAIN (default "groq,gemini,ollama"), failover on 429/5xx/timeout, log which provider served each call, then fallback template plan.
+  *Acceptance:* mocked tests prove failover order; with all providers failing, the fallback plan is returned with notice.
+- [ ] **T-09d** Add a "bring your own API key" input in the Streamlit sidebar (session-only, never stored or logged) and show the active provider in the UI.
+  *Acceptance:* user can enter session keys in sidebar; UI displays active serving provider badge; no keys logged or persisted to disk.
 - [ ] **T-09** **Deploy v0** to Streamlit Community Cloud (or Hugging Face Spaces). Add key as a secret. Add "Estimates only, not real prices" notice.
   *Acceptance:* public URL works from a fresh browser. Record URL in Section 1.
 
@@ -433,6 +441,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | D-3 | start | Provider-agnostic LLM interface | Free-tier limits change; resilience and resume value |
 | D-4 | start | Guest list/RSVP/seating deprioritized | Scope creep, low resume value |
 | D-5 | 2026-10-28 | Upgrade from deprecated google-generativeai to google-genai SDK with gemini-2.5-flash | Google migrated to unified google-genai SDK; gemini-2.5-flash is the current recommended free-tier Flash model with native structured outputs |
+| D-6 | 2026-10-30 | Gemini free quota (20 requests/day on 2.5-flash) is too low for real users. Add a provider router with failover. | Free-tier daily limit of 20 requests per project blocks real-world usage and evals; router with Groq, Gemini, and Ollama provides resilient multi-provider failover. |
 
 ---
 
@@ -450,6 +459,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-25 | Antigravity Gemini 3.8 Flash | T-08 | Built complete Streamlit intake form in app/main.py with event type, date, guests, budget, currency, city, vibe, notes, language selector, quick demo buttons, budget table with integrity check, scheduled timeline, vendor checklists, ideas, and observability expander; automated AppTest suite | app/main.py, tests/test_main_app.py | 75 tests pass, end-to-end flow verified locally, ruff clean |
 | 2026-10-28 | Antigravity Gemini 3.8 Flash | Upgrade & T-09 | Upgraded Gemini client to google-genai unified SDK v2.33 with gemini-2.5-flash; updated tests, error handling, config with st.secrets fallback, and verified 76/76 unit tests pass | requirements.txt, app/config.py, app/llm/gemini.py, tests/test_llm_gemini.py, scripts/test_gemini_call.py, .env.example | 76 tests pass, ready for GitHub remote push & Streamlit Cloud deploy |
 | 2026-10-28 | Antigravity Gemini 3.8 Flash | Fix CI & Push | Added requirements-dev.txt with hypothesis/pytest/ruff, updated .github/workflows/ci.yml, resolved AppTest path resolution in tests/test_main_app.py, repaired UTF-16 corrupted README.md, verified all 76 tests pass | .github/workflows/ci.yml, requirements-dev.txt, tests/test_main_app.py, README.md, EVENTGENIE_MASTER_PROMPT.md | Pushed to GitHub remote, green CI |
+| 2026-10-30 | Antigravity Gemini 3.8 Flash | T-09a | Implemented GroqLLM in app/llm/groq.py with OpenAI-compatible API, schema validation, retry/backoff, token and latency logging; added unit tests and verified with live Groq call | app/llm/groq.py, app/llm/__init__.py, app/config.py, tests/test_llm_groq.py, scripts/test_groq_call.py, requirements.txt, .env.example, EVENTGENIE_MASTER_PROMPT.md | 8 unit tests pass, live structured call succeeded |
 
 ---
 

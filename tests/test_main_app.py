@@ -20,7 +20,7 @@ def _mock_generate(inputs):
 
 def test_app_initial_render():
     at = AppTest.from_file(MAIN_APP_PATH)
-    at.run()
+    at.run(timeout=10)
     assert not at.exception
     # Check that main title and disclaimer are rendered
     assert len(at.title) == 0  # we used markdown for custom styling
@@ -31,13 +31,13 @@ def test_app_initial_render():
 def test_app_demo_button_generates_and_renders_plan():
     with patch("app.pipeline.generate_plan_v0", side_effect=_mock_generate):
         at = AppTest.from_file(MAIN_APP_PATH)
-        at.run()
+        at.run(timeout=10)
         assert not at.exception
 
         # Find the "💍 Sample Wedding" button
         wedding_btn = next((b for b in at.button if "Sample Wedding" in b.label), None)
         assert wedding_btn is not None
-        wedding_btn.click().run()
+        wedding_btn.click().run(timeout=10)
 
         assert not at.exception
         # Check that plan summary is rendered

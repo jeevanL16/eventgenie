@@ -11,6 +11,7 @@ from app.llm.base import (
     LLMValidationError,
 )
 from app.llm.gemini import GeminiLLM
+from app.llm.groq import GroqLLM
 
 
 def get_llm(provider: str | None = None) -> LLM:
@@ -19,10 +20,7 @@ def get_llm(provider: str | None = None) -> LLM:
     if selected_provider == "gemini":
         return GeminiLLM()
     elif selected_provider == "groq":
-        # Placeholder until T-33
-        raise NotImplementedError(
-            "Groq provider is scheduled for implementation in T-33. Use LLM_PROVIDER=gemini."
-        )
+        return GroqLLM()
     else:
         raise ValueError(
             f"Unsupported LLM provider: '{selected_provider}'. Supported providers: 'gemini', 'groq'."
@@ -38,5 +36,6 @@ __all__ = [
     "LLMTimeoutError",
     "LLMValidationError",
     "GeminiLLM",
+    "GroqLLM",
     "get_llm",
 ]
