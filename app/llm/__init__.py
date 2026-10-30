@@ -12,6 +12,7 @@ from app.llm.base import (
 )
 from app.llm.gemini import GeminiLLM
 from app.llm.groq import GroqLLM
+from app.llm.ollama import OllamaLLM
 
 
 def get_llm(provider: str | None = None) -> LLM:
@@ -21,9 +22,11 @@ def get_llm(provider: str | None = None) -> LLM:
         return GeminiLLM()
     elif selected_provider == "groq":
         return GroqLLM()
+    elif selected_provider == "ollama":
+        return OllamaLLM()
     else:
         raise ValueError(
-            f"Unsupported LLM provider: '{selected_provider}'. Supported providers: 'gemini', 'groq'."
+            f"Unsupported LLM provider: '{selected_provider}'. Supported providers: 'gemini', 'groq', 'ollama'."
         )
 
 
@@ -37,5 +40,6 @@ __all__ = [
     "LLMValidationError",
     "GeminiLLM",
     "GroqLLM",
+    "OllamaLLM",
     "get_llm",
 ]

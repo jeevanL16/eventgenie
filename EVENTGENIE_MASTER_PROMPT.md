@@ -28,13 +28,13 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-30 |
-| Last completed task | T-09a (Groq LLM provider with retry, schema validation, and token/latency capture) |
-| Currently in progress | T-09b (Ollama LLM provider for local dev and evals) |
-| **NEXT TASK** | **T-09b** (Implement llm/ollama.py with base URL, model config, retry/backoff, JSON mode) |
+| Last completed task | T-09b (Ollama LLM provider for local dev and evals) |
+| Currently in progress | T-09c (LLM router with ordered failover chain) |
+| **NEXT TASK** | **T-09c** (Implement llm/router.py with LLM_CHAIN failover, per-call telemetry, and fallback plan) |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | _awaiting deployment URL from share.streamlit.io_ |
 | Blockers | none |
-| Half-done work / notes for next agent | T-09a completed and verified with mocked tests and live Groq API call. Next: implement Ollama provider in app/llm/ollama.py. |
+| Half-done work / notes for next agent | T-09a and T-09b completed and tested. Next: implement LLMRouter in app/llm/router.py with ordered failover chain (groq -> gemini -> ollama). |
 
 ---
 
@@ -302,7 +302,7 @@ eventgenie/
   *Acceptance:* full flow works end to end locally.
 - [x] **T-09a** Implement `llm/groq.py` (OpenAI-compatible API, model configurable by env var, same LLM protocol, retry/backoff, token and latency logging).
   *Acceptance:* unit tests with mocked Groq client pass; with GROQ_API_KEY set, generates valid structured output and text.
-- [ ] **T-09b** Implement `llm/ollama.py` (local, base URL and model configurable) for dev and evals.
+- [x] **T-09b** Implement `llm/ollama.py` (local, base URL and model configurable) for dev and evals.
   *Acceptance:* unit tests with mocked Ollama API pass; local or mock generation produces valid output.
 - [ ] **T-09c** Implement `llm/router.py`: ordered provider chain from env var LLM_CHAIN (default "groq,gemini,ollama"), failover on 429/5xx/timeout, log which provider served each call, then fallback template plan.
   *Acceptance:* mocked tests prove failover order; with all providers failing, the fallback plan is returned with notice.
@@ -460,6 +460,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-28 | Antigravity Gemini 3.8 Flash | Upgrade & T-09 | Upgraded Gemini client to google-genai unified SDK v2.33 with gemini-2.5-flash; updated tests, error handling, config with st.secrets fallback, and verified 76/76 unit tests pass | requirements.txt, app/config.py, app/llm/gemini.py, tests/test_llm_gemini.py, scripts/test_gemini_call.py, .env.example | 76 tests pass, ready for GitHub remote push & Streamlit Cloud deploy |
 | 2026-10-28 | Antigravity Gemini 3.8 Flash | Fix CI & Push | Added requirements-dev.txt with hypothesis/pytest/ruff, updated .github/workflows/ci.yml, resolved AppTest path resolution in tests/test_main_app.py, repaired UTF-16 corrupted README.md, verified all 76 tests pass | .github/workflows/ci.yml, requirements-dev.txt, tests/test_main_app.py, README.md, EVENTGENIE_MASTER_PROMPT.md | Pushed to GitHub remote, green CI |
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | T-09a | Implemented GroqLLM in app/llm/groq.py with OpenAI-compatible API, schema validation, retry/backoff, token and latency logging; added unit tests and verified with live Groq call | app/llm/groq.py, app/llm/__init__.py, app/config.py, tests/test_llm_groq.py, scripts/test_groq_call.py, requirements.txt, .env.example, EVENTGENIE_MASTER_PROMPT.md | 8 unit tests pass, live structured call succeeded |
+| 2026-10-30 | Antigravity Gemini 3.8 Flash | T-09b | Implemented OllamaLLM in app/llm/ollama.py for local offline inference/evals with REST chat API, JSON format mode, latency/token telemetry, and 8 unit tests | app/llm/ollama.py, app/llm/__init__.py, tests/test_llm_ollama.py, EVENTGENIE_MASTER_PROMPT.md | 8 unit tests pass, ruff clean |
 
 ---
 
