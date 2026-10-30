@@ -28,13 +28,13 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-30 |
-| Last completed task | T-09d (BYOK sidebar input and active provider UI badge) |
-| Currently in progress | T-09 (Streamlit Community Cloud deployment) |
-| **NEXT TASK** | **T-09** (Deploy to Streamlit Cloud, set keys in secrets, verify public URL) |
+| Last completed task | F-01 (Secrets audit: clean git history and tracked files) |
+| Currently in progress | F-02 (Cloud-safe provider chain) |
+| **NEXT TASK** | **F-02** (Default LLM_CHAIN to "groq,gemini", instant skip on missing keys, conditional Ollama) |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | _awaiting deployment URL from share.streamlit.io_ |
 | Blockers | none (remote pushed to https://github.com/jeevanL16/eventgenie.git) |
-| Half-done work / notes for next agent | Tasks T-09a through T-09d complete. Router failover chain (Groq -> Gemini -> Ollama) fully tested and working. Ready to connect repo on share.streamlit.io. |
+| Half-done work / notes for next agent | F-01 completed. Verified no real API keys in git history or tracked files. Next: implement F-02 cloud-safe provider chain. |
 
 ---
 
@@ -308,6 +308,18 @@ eventgenie/
   *Acceptance:* mocked tests prove failover order; with all providers failing, the fallback plan is returned with notice.
 - [x] **T-09d** Add a "bring your own API key" input in the Streamlit sidebar (session-only, never stored or logged) and show the active provider in the UI.
   *Acceptance:* user can enter session keys in sidebar; UI displays active serving provider badge; no keys logged or persisted to disk.
+- [x] **F-01** Secrets audit: verify git history and tracked files contain no real keys (`gsk_`, `AIza`, hardcoded secrets). Confirm `.env` gitignored and uncommitted.
+  *Acceptance:* no real key in any commit; report result.
+- [ ] **F-02** Cloud-safe provider chain: default `LLM_CHAIN` to `"groq,gemini"`; skip missing-key providers instantly without delay; only use Ollama if explicitly in `LLM_CHAIN` or `OLLAMA_BASE_URL` is set.
+  *Acceptance:* test proves missing key skips provider; test proves no keys + no Ollama returns fallback plan instantly.
+- [ ] **F-03** Read config from Streamlit secrets: env vars first, then `st.secrets` fallback; add `.streamlit/secrets.toml.example`; ensure `.streamlit/secrets.toml` is gitignored.
+  *Acceptance:* tests prove `st.secrets` fallback works; app starts cleanly without secrets file.
+- [ ] **F-04** Honest provider and error display: sanitize user-facing errors (no raw 429 JSON dumps); show friendly notice in UI while preserving full error in logs/telemetry.
+  *Acceptance:* test with simulated 429 verifies friendly message and no raw JSON in UI.
+- [ ] **F-05** Model and docs consistency: make default Groq model configurable and verified via API; fix Decision Log numbering (D-5 vs D-6) and log cloud chain decision; update README free-tier limits section.
+  *Acceptance:* master prompt and README consistent with codebase.
+- [ ] **F-06** Pre-deploy check: full pytest suite and ruff checks pass; create `DEPLOY.md` with step-by-step Streamlit Cloud deployment instructions and secrets template.
+  *Acceptance:* green pytest and ruff; complete 5-minute deployment guide.
 - [ ] **T-09** **Deploy v0** to Streamlit Community Cloud (or Hugging Face Spaces). Add key as a secret. Add "Estimates only, not real prices" notice.
   *Acceptance:* public URL works from a fresh browser. Record URL in Section 1.
 
@@ -463,6 +475,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | T-09b | Implemented OllamaLLM in app/llm/ollama.py for local offline inference/evals with REST chat API, JSON format mode, latency/token telemetry, and 8 unit tests | app/llm/ollama.py, app/llm/__init__.py, tests/test_llm_ollama.py, EVENTGENIE_MASTER_PROMPT.md | 8 unit tests pass, ruff clean |
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | T-09c | Implemented LLMRouter in app/llm/router.py with configurable LLM_CHAIN failover, per-provider error telemetry, GenerationResult provider tracking, and fallback plan integration | app/llm/router.py, app/llm/__init__.py, app/pipeline.py, tests/test_llm_router.py, EVENTGENIE_MASTER_PROMPT.md | 5 unit tests pass, live plan generation verified, ruff clean |
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | T-09d | Added Bring-Your-Own-Key (BYOK) inputs to Streamlit sidebar (session-only, never persisted), active provider badge to metric ribbon, engine info to expander, and AppTests | app/main.py, tests/test_main_app.py, tests/test_llm_gemini.py, EVENTGENIE_MASTER_PROMPT.md | 4 AppTests pass, 98/98 unit tests pass, ruff clean |
+| 2026-10-30 | Antigravity Gemini 3.8 Flash | F-01 | Secrets audit: scanned git commit history and tracked files for API keys; confirmed .env is gitignored and scripts/tests use only placeholders | EVENTGENIE_MASTER_PROMPT.md | Clean audit, no real keys in git history |
 
 ---
 
