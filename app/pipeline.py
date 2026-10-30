@@ -76,6 +76,7 @@ class GenerationResult:
     is_fallback: bool
     notices: list[str]
     metadata: LLMMetadata | None = None
+    provider: str | None = None
 
 
 # Default budget percentage distributions from Section 7 of EVENTGENIE_MASTER_PROMPT.md
@@ -642,11 +643,15 @@ def generate_plan_v0(
 
             # Assemble and validate full EventPlan
             plan = _assemble_event_plan(proposal, validated_inputs)
+            active_provider = getattr(client, "active_provider", None) or getattr(
+                client, "__class__", type(client)
+            ).__name__.lower().replace("llm", "")
             return GenerationResult(
                 plan=plan,
                 is_fallback=False,
                 notices=[],
                 metadata=getattr(client, "last_metadata", None),
+                provider=active_provider,
             )
 
         except (LLMValidationError, ValidationError, ValueError) as e:
