@@ -28,13 +28,13 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-30 |
-| Last completed task | F-04 (Sanitized user-facing errors, friendly busy message, full error in logs) |
-| Currently in progress | F-05 (Model and docs consistency) |
-| **NEXT TASK** | **F-05** (Configure & verify Groq model via API, align Decision Log numbering, update README failover section) |
+| Last completed task | F-05 (Model and docs consistency: live model check, D-6/D-7/D-8 logged, README failover section) |
+| Currently in progress | F-06 (Pre-deploy check) |
+| **NEXT TASK** | **F-06** (Run pytest + ruff; create DEPLOY.md with 5-minute instructions and secrets template) |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | _awaiting deployment URL from share.streamlit.io_ |
 | Blockers | none (remote pushed to https://github.com/jeevanL16/eventgenie.git) |
-| Half-done work / notes for next agent | F-01 through F-04 complete. Raw error dumps replaced with polite user messages. Next: implement F-05 (model verification, Decision Log alignment, README update). |
+| Half-done work / notes for next agent | F-01 through F-05 complete. Next: run full verification and generate DEPLOY.md before T-09 deployment. |
 
 ---
 
@@ -316,7 +316,7 @@ eventgenie/
   *Acceptance:* tests prove `st.secrets` fallback works; app starts cleanly without secrets file.
 - [x] **F-04** Honest provider and error display: sanitize user-facing errors (no raw 429 JSON dumps); show friendly notice in UI while preserving full error in logs/telemetry.
   *Acceptance:* test with simulated 429 verifies friendly message and no raw JSON in UI.
-- [ ] **F-05** Model and docs consistency: make default Groq model configurable and verified via API; fix Decision Log numbering (D-5 vs D-6) and log cloud chain decision; update README free-tier limits section.
+- [x] **F-05** Model and docs consistency: make default Groq model configurable and verified via API; fix Decision Log numbering (D-5 vs D-6) and log cloud chain decision; update README free-tier limits section.
   *Acceptance:* master prompt and README consistent with codebase.
 - [ ] **F-06** Pre-deploy check: full pytest suite and ruff checks pass; create `DEPLOY.md` with step-by-step Streamlit Cloud deployment instructions and secrets template.
   *Acceptance:* green pytest and ruff; complete 5-minute deployment guide.
@@ -453,7 +453,9 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | D-3 | start | Provider-agnostic LLM interface | Free-tier limits change; resilience and resume value |
 | D-4 | start | Guest list/RSVP/seating deprioritized | Scope creep, low resume value |
 | D-5 | 2026-10-28 | Upgrade from deprecated google-generativeai to google-genai SDK with gemini-2.5-flash | Google migrated to unified google-genai SDK; gemini-2.5-flash is the current recommended free-tier Flash model with native structured outputs |
-| D-6 | 2026-10-30 | Gemini free quota (20 requests/day on 2.5-flash) is too low for real users. Add a provider router with failover. | Free-tier daily limit of 20 requests per project blocks real-world usage and evals; router with Groq, Gemini, and Ollama provides resilient multi-provider failover. |
+| D-6 | 2026-10-30 | Gemini free quota on Flash is too low for reliable demos. Add a provider router with failover. | Free-tier daily limits block continuous usage; router with Groq and Gemini provides resilient multi-provider failover |
+| D-7 | 2026-10-30 | Ollama excluded from cloud chain (default LLM_CHAIN becomes groq,gemini) | Cloud hosting environments lack local Ollama daemon; prevent network connection timeouts by requiring explicit OLLAMA_BASE_URL for local runs |
+| D-8 | 2026-10-30 | Default Groq model set to qwen/qwen3.8-27b | Verified live against the Groq API model catalog for active tier; delivers fast structured JSON output |
 
 ---
 
@@ -479,6 +481,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | F-02 | Configured cloud-safe chain (default 'groq,gemini'); made Ollama conditional; added instant provider skipping on missing keys with 0 delay; 2 new acceptance tests | app/config.py, .env.example, app/llm/router.py, tests/test_llm_router.py, EVENTGENIE_MASTER_PROMPT.md | 7/7 router tests pass, ruff clean |
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | F-03 | Implemented robust get_setting in app/config.py with env priority and safe st.secrets fallback; created .streamlit/secrets.toml.example; verified .streamlit/secrets.toml gitignored; added 4 unit tests | app/config.py, .streamlit/secrets.toml.example, tests/test_config.py, EVENTGENIE_MASTER_PROMPT.md | 4/4 config tests pass, ruff clean |
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | F-04 | Implemented sanitize_error_message in app/pipeline.py to prevent raw JSON/429 RPC error dumps from leaking to UI; updated main.py warnings; added simulated 429 unit and AppTests | app/pipeline.py, app/main.py, tests/test_llm_router.py, tests/test_main_app.py, EVENTGENIE_MASTER_PROMPT.md | 14/14 tests pass, ruff clean |
+| 2026-10-30 | Antigravity Gemini 3.8 Flash | F-05 | Added get_available_groq_models helper; aligned Decision Log numbering (D-5, D-6, D-7, D-8); updated README with Free-Tier Limits & Provider Failover section | app/llm/groq.py, tests/test_llm_groq.py, README.md, EVENTGENIE_MASTER_PROMPT.md | 9 unit tests pass, README updated |
 
 ---
 

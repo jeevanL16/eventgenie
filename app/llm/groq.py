@@ -1,7 +1,7 @@
 """Groq LLM provider implementation using the official Groq SDK (OpenAI-compatible).
 
 Supports structured JSON output and plain text generation with retry/exponential backoff,
-timeout handling, token accounting, and latency telemetry.
+timeout handling, token accounting, latency telemetry, and dynamic model verification.
 """
 
 import json
@@ -28,6 +28,22 @@ from app.llm.base import (
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=BaseModel)
+
+
+def get_available_groq_models(api_key: str | None = None) -> list[str]:
+    """Query Groq API for available chat completion models.
+
+    Returns a list of model IDs available on the given key, or empty list on failure.
+    """
+    key = api_key or config.GROQ_API_KEY
+    if not key:
+        return []
+    try:
+        client = groq.Groq(api_key=key, timeout=5.0)
+        return [m.id for m in client.models.list().data]
+    except Exception as e:
+        logger.warning("Could not query live Groq model list: %s", e)
+        return []
 
 
 class GroqLLM:

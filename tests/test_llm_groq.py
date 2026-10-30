@@ -170,3 +170,20 @@ def test_groq_timeout_error():
     with patch.object(llm._client.chat.completions, "create", side_effect=timeout_err):
         with pytest.raises(LLMTimeoutError):
             llm.generate_text(system="sys", prompt="user")
+
+
+def test_get_available_groq_models():
+    from app.llm.groq import get_available_groq_models
+
+    mock_model_1 = MagicMock()
+    mock_model_1.id = "qwen/qwen3.8-27b"
+    mock_model_2 = MagicMock()
+    mock_model_2.id = "openai/gpt-oss-120b"
+
+    mock_client = MagicMock()
+    mock_client.models.list.return_value.data = [mock_model_1, mock_model_2]
+
+    with patch("groq.Groq", return_value=mock_client):
+        models = get_available_groq_models(api_key="gsk_test")
+        assert "qwen/qwen3.8-27b" in models
+        assert "openai/gpt-oss-120b" in models
