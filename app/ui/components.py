@@ -1,6 +1,6 @@
 """Reusable UI components for the EventGenie landing page and planner.
 
-Each function renders one self-contained section via st.markdown with
+Each function renders one self-contained section via render_html with
 static trusted HTML. Dynamic or user-supplied text is always escaped
 with html.escape or rendered via native Streamlit widgets.
 """
@@ -10,6 +10,7 @@ import html as html_mod
 import streamlit as st
 
 from app.i18n import t
+from app.ui.html import render_html
 
 
 # ---------------------------------------------------------------------------
@@ -17,29 +18,20 @@ from app.i18n import t
 # ---------------------------------------------------------------------------
 def nav_bar(lang: str = "en") -> None:
     """Render a sticky top navigation bar with logo, links, and CTA."""
-    st.markdown(
-        f"""
-        <a class="skip-link" href="#planner-section" aria-label="Skip to planner">
-            Skip to planner
-        </a>
-        <nav class="eg-nav" role="navigation" aria-label="Main navigation">
-            <a class="eg-nav-logo" href="#" aria-label="EventGenie Home">
-                ✨ {html_mod.escape(t("app_title", lang))}
-            </a>
-            <ul class="eg-nav-links">
-                <li><a href="#home">{html_mod.escape(t("nav_home", lang))}</a></li>
-                <li><a href="#how-it-works">{html_mod.escape(t("nav_how", lang))}</a></li>
-                <li><a href="#planner-section">{html_mod.escape(t("nav_plan", lang))}</a></li>
-                <li><a href="#about">{html_mod.escape(t("nav_about", lang))}</a></li>
-            </ul>
-            <a class="eg-nav-cta" href="#planner-section"
-               aria-label="{html_mod.escape(t("nav_plan", lang))}">
-                {html_mod.escape(t("nav_plan", lang))}
-            </a>
-        </nav>
-        """,
-        unsafe_allow_html=True,
-    )
+    html_code = f"""
+    <a class="skip-link" href="#planner-section" aria-label="Skip to planner">Skip to planner</a>
+    <nav class="eg-nav" role="navigation" aria-label="Main navigation">
+        <a class="eg-nav-logo eg-brand" href="#home" aria-label="EventGenie Home">✨ {html_mod.escape(t("app_title", lang))}</a>
+        <ul class="eg-nav-links">
+            <li><a href="#home">{html_mod.escape(t("nav_home", lang))}</a></li>
+            <li><a href="#how-it-works">{html_mod.escape(t("nav_how", lang))}</a></li>
+            <li><a href="#planner-section">{html_mod.escape(t("nav_plan", lang))}</a></li>
+            <li><a href="#about">{html_mod.escape(t("nav_about", lang))}</a></li>
+        </ul>
+        <a class="eg-nav-cta eg-btn" href="#planner-section" aria-label="{html_mod.escape(t("nav_plan", lang))}">{html_mod.escape(t("nav_plan", lang))}</a>
+    </nav>
+    """
+    render_html(html_code)
 
 
 # ---------------------------------------------------------------------------
@@ -55,35 +47,31 @@ def hero(lang: str = "en") -> None:
     stat2 = html_mod.escape(t("stat_events", lang))
     stat3 = html_mod.escape(t("stat_outputs", lang))
 
-    st.markdown(
-        f"""
-        <div class="eg-hero" id="home">
-            <h1>{headline}</h1>
-            <p class="subline">{subline}</p>
-            <div class="eg-hero-actions">
-                <a class="eg-btn-primary" href="#planner-section"
-                   aria-label="{cta_text}">✨ {cta_text}</a>
-                <a class="eg-btn-secondary" href="#sample-preview"
-                   aria-label="{sample_text}">📋 {sample_text}</a>
+    html_code = f"""
+    <div class="eg-hero" id="home">
+        <h1>{headline}</h1>
+        <p class="subline">{subline}</p>
+        <div class="eg-hero-actions">
+            <a class="eg-btn-primary eg-btn" href="#planner-section" aria-label="{cta_text}">✨ {cta_text}</a>
+            <a class="eg-btn-secondary eg-btn" href="#sample-preview" aria-label="{sample_text}">📋 {sample_text}</a>
+        </div>
+        <div class="eg-stats">
+            <div class="eg-stat">
+                <span class="number">6</span>
+                <span class="label">{stat1}</span>
             </div>
-            <div class="eg-stats">
-                <div class="eg-stat">
-                    <span class="number">6</span>
-                    <span class="label">{stat1}</span>
-                </div>
-                <div class="eg-stat">
-                    <span class="number">3</span>
-                    <span class="label">{stat2}</span>
-                </div>
-                <div class="eg-stat">
-                    <span class="number">4</span>
-                    <span class="label">{stat3}</span>
-                </div>
+            <div class="eg-stat">
+                <span class="number">3</span>
+                <span class="label">{stat2}</span>
+            </div>
+            <div class="eg-stat">
+                <span class="number">4</span>
+                <span class="label">{stat3}</span>
             </div>
         </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    </div>
+    """
+    render_html(html_code)
 
 
 # ---------------------------------------------------------------------------
@@ -124,17 +112,15 @@ def event_cards(lang: str = "en") -> str | None:
         """
 
     section_title = html_mod.escape(t("event_type", lang))
-    st.markdown(
-        f"""
-        <div class="eg-section" id="event-types">
-            <h2 class="eg-section-title">{section_title}</h2>
-            <div class="eg-cards">{cards_html}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    wrapper_html = f"""
+    <div class="eg-section" id="event-types">
+        <h2 class="eg-section-title">{section_title}</h2>
+        <div class="eg-cards">{cards_html}</div>
+    </div>
+    """
+    render_html(wrapper_html)
 
-    # Use Streamlit buttons for interactivity (can't use HTML onclick)
+    # Use Streamlit buttons for interactivity
     cols = st.columns(3)
     chosen = None
     start_label = t("card_start_planning", lang)
@@ -145,6 +131,7 @@ def event_cards(lang: str = "en") -> str | None:
                 f"{icon} {start_label}: {t(title_key, lang)}",
                 key=f"card_btn_{etype}",
                 use_container_width=True,
+                help=f"Plan a {t(title_key, lang)}",
             ):
                 chosen = etype
     return chosen
@@ -176,16 +163,14 @@ def how_it_works(lang: str = "en") -> None:
     section_title = html_mod.escape(t("how_title", lang))
     section_sub = html_mod.escape(t("how_subtitle", lang))
 
-    st.markdown(
-        f"""
-        <div class="eg-section" id="how-it-works">
-            <h2 class="eg-section-title">{section_title}</h2>
-            <p class="eg-section-sub">{section_sub}</p>
-            <div class="eg-steps">{steps_html}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    wrapper_html = f"""
+    <div class="eg-section" id="how-it-works">
+        <h2 class="eg-section-title">{section_title}</h2>
+        <p class="eg-section-sub">{section_sub}</p>
+        <div class="eg-steps">{steps_html}</div>
+    </div>
+    """
+    render_html(wrapper_html)
 
 
 # ---------------------------------------------------------------------------
@@ -200,52 +185,47 @@ def sample_preview(lang: str = "en") -> None:
     timeline_hdr = html_mod.escape(t("timeline", lang))
     vendor_hdr = html_mod.escape(t("vendor_checklist", lang))
 
-    st.markdown(
-        f"""
-        <div class="eg-section" id="sample-preview">
-            <div class="eg-preview">
-                <span class="eg-preview-label">{label}</span>
-                <h3>{title}: {event_desc}</h3>
-
-                <h4>💰 {budget_hdr}</h4>
-                <table aria-label="Sample budget breakdown">
-                    <thead>
-                        <tr><th>Category</th><th>Allocation</th><th>Amount</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>Venue &amp; Rental</td><td>30%</td><td>₹3,60,000</td></tr>
-                        <tr><td>Catering</td><td>25%</td><td>₹3,00,000</td></tr>
-                        <tr><td>Photography</td><td>15%</td><td>₹1,80,000</td></tr>
-                        <tr><td>Decor &amp; Flowers</td><td>15%</td><td>₹1,80,000</td></tr>
-                        <tr><td>Entertainment</td><td>10%</td><td>₹1,20,000</td></tr>
-                        <tr><td>Contingency</td><td>5%</td><td>₹60,000</td></tr>
-                    </tbody>
-                </table>
-
-                <h4>📅 {timeline_hdr} (4 of 7 milestones)</h4>
-                <table aria-label="Sample timeline milestones">
-                    <thead>
-                        <tr><th>Due Date</th><th>Phase</th><th>Task</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>6 months out</td><td>Planning</td><td>Book venue and finalize date</td></tr>
-                        <tr><td>4 months out</td><td>Booking</td><td>Confirm catering and menu tasting</td></tr>
-                        <tr><td>2 months out</td><td>Coordination</td><td>Finalize photographer and schedule</td></tr>
-                        <tr><td>2 weeks out</td><td>Final</td><td>Confirm all vendors and seating</td></tr>
-                    </tbody>
-                </table>
-
-                <h4>🤝 {vendor_hdr} (3 sample questions)</h4>
-                <ul style="color: var(--text-body); font-size: 0.9rem; padding-left: var(--sp-5);">
-                    <li>Does the venue have backup power and covered outdoor areas?</li>
-                    <li>Can the caterer accommodate 200+ guests with live counters?</li>
-                    <li>What is the photographer's cancellation and refund policy?</li>
-                </ul>
-            </div>
+    html_code = f"""
+    <div class="eg-section" id="sample-preview">
+        <div class="eg-preview">
+            <span class="eg-preview-label">{label}</span>
+            <h3>{title}: {event_desc}</h3>
+            <h4>💰 {budget_hdr}</h4>
+            <table aria-label="Sample budget breakdown">
+                <thead>
+                    <tr><th>Category</th><th>Allocation</th><th>Amount</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Venue &amp; Rental</td><td>30%</td><td>₹3,60,000</td></tr>
+                    <tr><td>Catering</td><td>25%</td><td>₹3,00,000</td></tr>
+                    <tr><td>Photography</td><td>15%</td><td>₹1,80,000</td></tr>
+                    <tr><td>Decor &amp; Flowers</td><td>15%</td><td>₹1,80,000</td></tr>
+                    <tr><td>Entertainment</td><td>10%</td><td>₹1,20,000</td></tr>
+                    <tr><td>Contingency</td><td>5%</td><td>₹60,000</td></tr>
+                </tbody>
+            </table>
+            <h4>📅 {timeline_hdr} (4 of 7 milestones)</h4>
+            <table aria-label="Sample timeline milestones">
+                <thead>
+                    <tr><th>Due Date</th><th>Phase</th><th>Task</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>6 months out</td><td>Planning</td><td>Book venue and finalize date</td></tr>
+                    <tr><td>4 months out</td><td>Booking</td><td>Confirm catering and menu tasting</td></tr>
+                    <tr><td>2 months out</td><td>Coordination</td><td>Finalize photographer and schedule</td></tr>
+                    <tr><td>2 weeks out</td><td>Final</td><td>Confirm all vendors and seating</td></tr>
+                </tbody>
+            </table>
+            <h4>🤝 {vendor_hdr} (3 sample questions)</h4>
+            <ul style="color: var(--text-body); font-size: 0.9rem; padding-left: var(--sp-5);">
+                <li>Does the venue have backup power and covered outdoor areas?</li>
+                <li>Can the caterer accommodate 200+ guests with live counters?</li>
+                <li>What is the photographer's cancellation and refund policy?</li>
+            </ul>
         </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    </div>
+    """
+    render_html(html_code)
 
 
 # ---------------------------------------------------------------------------
@@ -257,17 +237,14 @@ def cta_banner(lang: str = "en") -> None:
     subtitle = html_mod.escape(t("cta_subtitle", lang))
     btn = html_mod.escape(t("cta_button", lang))
 
-    st.markdown(
-        f"""
-        <div class="eg-cta-banner" id="about">
-            <h2>{title}</h2>
-            <p>{subtitle}</p>
-            <a class="eg-btn-primary" href="#planner-section"
-               aria-label="{btn}">✨ {btn}</a>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    html_code = f"""
+    <div class="eg-cta-banner" id="about">
+        <h2>{title}</h2>
+        <p>{subtitle}</p>
+        <a class="eg-btn-primary eg-btn" href="#planner-section" aria-label="{btn}">✨ {btn}</a>
+    </div>
+    """
+    render_html(html_code)
 
 
 # ---------------------------------------------------------------------------
@@ -288,52 +265,49 @@ def footer(lang: str = "en") -> None:
     disclaimer = html_mod.escape(t("footer_disclaimer", lang))
     copyright_text = html_mod.escape(t("footer_copyright", lang))
 
-    st.markdown(
-        f"""
-        <div class="eg-footer">
-            <div class="eg-footer-grid">
-                <div class="eg-footer-col">
-                    <h4>{product}</h4>
-                    <ul>
-                        <li>{features}</li>
-                        <li>{pricing}</li>
-                        <li>{demo}</li>
-                    </ul>
-                </div>
-                <div class="eg-footer-col">
-                    <h4>{langs}</h4>
-                    <ul>
-                        <li>English</li>
-                        <li>हिन्दी (Hindi)</li>
-                        <li>ಕನ್ನಡ (Kannada)</li>
-                        <li>తెలుగు (Telugu)</li>
-                        <li>தமிழ் (Tamil)</li>
-                        <li>मराठी (Marathi)</li>
-                    </ul>
-                </div>
-                <div class="eg-footer-col">
-                    <h4>{project}</h4>
-                    <ul>
-                        <li><a href="https://github.com/jeevanL16/eventgenie"
-                               target="_blank" rel="noopener">{github}</a></li>
-                        <li>{docs}</li>
-                        <li>{security}</li>
-                    </ul>
-                </div>
-                <div class="eg-footer-col">
-                    <h4>{legal}</h4>
-                    <ul>
-                        <li style="line-height:1.5;">{disclaimer}</li>
-                    </ul>
-                </div>
+    html_code = f"""
+    <div class="eg-footer">
+        <div class="eg-footer-grid">
+            <div class="eg-footer-col">
+                <h4>{product}</h4>
+                <ul>
+                    <li>{features}</li>
+                    <li>{pricing}</li>
+                    <li>{demo}</li>
+                </ul>
             </div>
-            <div class="eg-footer-bottom">
-                {copyright_text}
+            <div class="eg-footer-col">
+                <h4>{langs}</h4>
+                <ul>
+                    <li>English</li>
+                    <li>हिन्दी (Hindi)</li>
+                    <li>ಕನ್ನಡ (Kannada)</li>
+                    <li>తెలుగు (Telugu)</li>
+                    <li>தமிழ் (Tamil)</li>
+                    <li>मराठी (Marathi)</li>
+                </ul>
+            </div>
+            <div class="eg-footer-col">
+                <h4>{project}</h4>
+                <ul>
+                    <li><a href="https://github.com/jeevanL16/eventgenie" target="_blank" rel="noopener">{github}</a></li>
+                    <li>{docs}</li>
+                    <li>{security}</li>
+                </ul>
+            </div>
+            <div class="eg-footer-col">
+                <h4>{legal}</h4>
+                <ul>
+                    <li style="line-height:1.5;">{disclaimer}</li>
+                </ul>
             </div>
         </div>
-        """,
-        unsafe_allow_html=True,
-    )
+        <div class="eg-footer-bottom">
+            {copyright_text}
+        </div>
+    </div>
+    """
+    render_html(html_code)
 
 
 # ---------------------------------------------------------------------------
@@ -371,20 +345,18 @@ def result_ribbon(
         else ""
     )
 
-    st.markdown(
-        f"""
-        <div class="eg-ribbon">
-            {provider_badge}
-            {cache_badge}
-            <span class="eg-result-badge eg-badge-info">{safe_event}</span>
-            <span class="eg-result-badge eg-badge-info">📍 {safe_city}</span>
-            <span class="eg-result-badge eg-badge-info">👥 {guests}</span>
-            <span class="eg-result-badge eg-badge-info">📅 {safe_date}</span>
-            <span class="eg-result-badge eg-badge-info">💰 {safe_currency}</span>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    html_code = f"""
+    <div class="eg-ribbon">
+        {provider_badge}
+        {cache_badge}
+        <span class="eg-result-badge eg-badge-info">{safe_event}</span>
+        <span class="eg-result-badge eg-badge-info">📍 {safe_city}</span>
+        <span class="eg-result-badge eg-badge-info">👥 {guests}</span>
+        <span class="eg-result-badge eg-badge-info">📅 {safe_date}</span>
+        <span class="eg-result-badge eg-badge-info">💰 {safe_currency}</span>
+    </div>
+    """
+    render_html(html_code)
 
 
 # ---------------------------------------------------------------------------
@@ -393,7 +365,5 @@ def result_ribbon(
 def disclaimer_banner(lang: str = "en") -> None:
     """Render the estimates-only warning banner."""
     text = html_mod.escape(t("estimates_disclaimer", lang))
-    st.markdown(
-        f'<div class="eg-disclaimer">⚠️ <strong>{text}</strong></div>',
-        unsafe_allow_html=True,
-    )
+    html_code = f'<div class="eg-disclaimer">⚠️ <strong>{text}</strong></div>'
+    render_html(html_code)

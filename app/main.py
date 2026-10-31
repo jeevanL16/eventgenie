@@ -36,6 +36,7 @@ from app.ui.components import (  # noqa: E402
     result_ribbon,
     sample_preview,
 )
+from app.ui.html import render_html  # noqa: E402
 from app.ui.theme import apply_theme  # noqa: E402
 
 # ---------------------------------------------------------------------------
@@ -128,12 +129,12 @@ def _render_sidebar() -> Any:
 # ---------------------------------------------------------------------------
 def _render_planner_form(session_llm: Any, lang: str) -> None:
     """Render the structured intake form inside a styled card."""
-    st.markdown(
+    heading_html = (
         f'<h2 id="planner-section" style="font-family: var(--font-heading); '
         f'color: var(--text-heading);">'
-        f"📋 {html.escape(t('planner_title', lang))}</h2>",
-        unsafe_allow_html=True,
+        f"📋 {html.escape(t('planner_title', lang))}</h2>"
     )
+    render_html(heading_html)
 
     selected_type = st.session_state.get("selected_event_type")
     type_options = ["wedding", "birthday", "community"]
