@@ -741,6 +741,44 @@ div[data-testid="stMarkdownContainer"] .eg-footer a:focus {
     }
 }
 
+@media (max-width: 480px) {
+    .eg-nav {
+        padding: var(--sp-2) var(--sp-3);
+        height: 56px;
+    }
+    .eg-nav-logo {
+        font-size: 1.25rem;
+    }
+    .eg-nav-cta {
+        padding: var(--sp-2) var(--sp-3);
+        font-size: 0.85rem;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .eg-hero {
+        padding: var(--sp-5) var(--sp-3) var(--sp-5);
+    }
+    .eg-hero h1 {
+        font-size: 1.75rem;
+    }
+    .eg-hero-actions {
+        width: 100%;
+    }
+    .eg-btn,
+    .eg-btn-primary,
+    .eg-btn-secondary {
+        width: 100%;
+        min-height: 44px;
+        box-sizing: border-box;
+        justify-content: center;
+    }
+    .eg-footer-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* --- Focus visibility for keyboard navigation --- */
 *:focus-visible {
     outline: 3px solid var(--accent-gold-bg);

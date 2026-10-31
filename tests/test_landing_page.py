@@ -171,3 +171,30 @@ class TestLandingPageComponents:
             )
             assert not stat_ev.startswith("3"), f"{lang} stat_events has leading 3: {stat_ev}"
             assert not stat_out.startswith("4"), f"{lang} stat_outputs has leading 4: {stat_out}"
+
+    def test_mobile_390px_media_query_rules(self):
+        """Task B-06: Mobile media query rules at <=480px / 390px with 44px min-height."""
+        css_path = Path(__file__).resolve().parent.parent / "app" / "ui" / "styles.css"
+        css_text = css_path.read_text(encoding="utf-8")
+        assert "@media (max-width: 480px)" in css_text
+        assert "min-height: 44px;" in css_text
+        assert "grid-template-columns: 1fr;" in css_text
+
+    def test_indic_font_stacks_and_rendering(self):
+        """Task B-06: Font stacks define Noto Sans fallbacks for Indic rendering."""
+        css_path = Path(__file__).resolve().parent.parent / "app" / "ui" / "styles.css"
+        css_text = css_path.read_text(encoding="utf-8")
+        assert "'Noto Sans Devanagari'" in css_text
+        assert "'Noto Sans Kannada'" in css_text
+        assert "'Noto Sans Telugu'" in css_text
+        assert "'Noto Sans Tamil'" in css_text
+
+        # Verify all 6 languages render their hero headline and CTA strings cleanly
+        for lang in SUPPORTED_LANGUAGES:
+            headline = t("hero_headline", lang)
+            cta = t("hero_cta", lang)
+            assert len(headline.strip()) > 0
+            assert len(cta.strip()) > 0
+            # Ensure no replacement character U+FFFD (tofu marker)
+            assert "\ufffd" not in headline
+            assert "\ufffd" not in cta
