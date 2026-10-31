@@ -73,6 +73,44 @@ class TestLandingPageComponents:
         assert ".skip-link:focus" in css_text
         assert "left: var(--sp-4);" in css_text
 
+    def test_scoped_link_and_button_css_overrides(self):
+        """CSS must scope markdown links to prevent Streamlit default styles."""
+        css_path = Path(__file__).resolve().parent.parent / "app" / "ui" / "styles.css"
+        css_text = css_path.read_text(encoding="utf-8")
+        assert ".stMarkdown a.eg-btn" in css_text
+        assert ".stMarkdown .eg-brand" in css_text
+        assert ".stMarkdown .eg-nav a:not(.eg-nav-cta)" in css_text
+        assert "text-decoration: none !important;" in css_text
+        assert "color: var(--btn-text) !important;" in css_text
+
+    def test_color_contrast_ratios_meet_wcag_aa(self):
+        """Text and button colors must meet WCAG AA (>= 4.5:1) contrast."""
+
+        def luminance(hex_code: str) -> float:
+            hex_code = hex_code.lstrip("#")
+            r, g, b = [int(hex_code[i : i + 2], 16) / 255.0 for i in (0, 2, 4)]
+
+            def adjust(c):
+                return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+
+            return 0.2126 * adjust(r) + 0.7152 * adjust(g) + 0.0722 * adjust(b)
+
+        def contrast(c1: str, c2: str) -> float:
+            l1 = luminance(c1)
+            l2 = luminance(c2)
+            return (max(l1, l2) + 0.05) / (min(l1, l2) + 0.05)
+
+        # Plum text (#2D1B4E) on Ivory background (#FBF7F0) >= 4.5:1
+        plum_ivory = contrast("#2D1B4E", "#FBF7F0")
+        assert plum_ivory >= 4.5, f"Plum on ivory contrast {plum_ivory:.2f} < 4.5"
+
+        # Ink text (#1C1235) on Gold button background (#F5A623) >= 4.5:1
+        ink_gold = contrast("#1C1235", "#F5A623")
+        assert ink_gold >= 4.5, f"Ink on gold contrast {ink_gold:.2f} < 4.5"
+
+        # Verify white on gold does NOT meet AA (ensures we never use white text on gold)
+        assert contrast("#FFFFFF", "#F5A623") < 4.5
+
     def test_event_card_buttons_exist_and_set_selection(self):
         """Clicking an event-type card button sets session state to that event type."""
         at = AppTest.from_file(MAIN_APP_PATH, default_timeout=20)

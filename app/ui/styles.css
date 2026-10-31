@@ -73,6 +73,102 @@
 footer {visibility: hidden;}
 header[data-testid="stHeader"] {background: transparent !important;}
 
+/* --- Scoped link and button styling to defeat Streamlit default overrides --- */
+.stMarkdown a,
+div[data-testid="stMarkdownContainer"] a {
+    text-decoration: none;
+}
+
+.stMarkdown a.eg-btn,
+div[data-testid="stMarkdownContainer"] a.eg-btn,
+.stMarkdown a.eg-btn-primary,
+div[data-testid="stMarkdownContainer"] a.eg-btn-primary,
+.stMarkdown a.eg-nav-cta,
+div[data-testid="stMarkdownContainer"] a.eg-nav-cta {
+    background-color: var(--accent-gold-bg) !important;
+    color: var(--btn-text) !important;
+    text-decoration: none !important;
+}
+
+.stMarkdown a.eg-btn:hover,
+div[data-testid="stMarkdownContainer"] a.eg-btn:hover,
+.stMarkdown a.eg-btn:focus,
+div[data-testid="stMarkdownContainer"] a.eg-btn:focus,
+.stMarkdown a.eg-btn-primary:hover,
+div[data-testid="stMarkdownContainer"] a.eg-btn-primary:hover,
+.stMarkdown a.eg-btn-primary:focus,
+div[data-testid="stMarkdownContainer"] a.eg-btn-primary:focus,
+.stMarkdown a.eg-nav-cta:hover,
+div[data-testid="stMarkdownContainer"] a.eg-nav-cta:hover,
+.stMarkdown a.eg-nav-cta:focus,
+div[data-testid="stMarkdownContainer"] a.eg-nav-cta:focus {
+    background-color: var(--accent-gold-hover) !important;
+    color: var(--btn-text) !important;
+    outline: 2px solid var(--text-heading) !important;
+    outline-offset: 2px !important;
+    text-decoration: none !important;
+}
+
+.stMarkdown a.eg-btn-secondary,
+div[data-testid="stMarkdownContainer"] a.eg-btn-secondary {
+    background-color: transparent !important;
+    color: var(--text-heading) !important;
+    border: 2px solid var(--border-light) !important;
+    text-decoration: none !important;
+}
+
+.stMarkdown a.eg-btn-secondary:hover,
+div[data-testid="stMarkdownContainer"] a.eg-btn-secondary:hover,
+.stMarkdown a.eg-btn-secondary:focus,
+div[data-testid="stMarkdownContainer"] a.eg-btn-secondary:focus {
+    color: var(--accent-gold) !important;
+    border-color: var(--accent-gold) !important;
+    outline: 2px solid var(--accent-gold) !important;
+    outline-offset: 2px !important;
+    text-decoration: none !important;
+}
+
+.stMarkdown .eg-brand,
+div[data-testid="stMarkdownContainer"] .eg-brand,
+.stMarkdown a.eg-nav-logo,
+div[data-testid="stMarkdownContainer"] a.eg-nav-logo {
+    color: var(--text-heading) !important;
+    text-decoration: none !important;
+    font-family: var(--font-heading) !important;
+}
+
+.stMarkdown .eg-nav a:not(.eg-nav-cta),
+div[data-testid="stMarkdownContainer"] .eg-nav a:not(.eg-nav-cta) {
+    color: var(--text-body) !important;
+    text-decoration: none !important;
+}
+
+.stMarkdown .eg-nav a:not(.eg-nav-cta):hover,
+div[data-testid="stMarkdownContainer"] .eg-nav a:not(.eg-nav-cta):hover,
+.stMarkdown .eg-nav a:not(.eg-nav-cta):focus,
+div[data-testid="stMarkdownContainer"] .eg-nav a:not(.eg-nav-cta):focus {
+    color: var(--accent-gold) !important;
+    outline: 2px solid var(--accent-gold) !important;
+    outline-offset: 2px !important;
+    text-decoration: none !important;
+}
+
+.stMarkdown .eg-footer a,
+div[data-testid="stMarkdownContainer"] .eg-footer a {
+    color: var(--text-muted-dk) !important;
+    text-decoration: none !important;
+}
+
+.stMarkdown .eg-footer a:hover,
+div[data-testid="stMarkdownContainer"] .eg-footer a:hover,
+.stMarkdown .eg-footer a:focus,
+div[data-testid="stMarkdownContainer"] .eg-footer a:focus {
+    color: var(--accent-gold-bg) !important;
+    outline: 2px solid var(--accent-gold-bg) !important;
+    outline-offset: 2px !important;
+    text-decoration: none !important;
+}
+
 /* --- Skip-to-content accessibility link --- */
 .skip-link {
     position: absolute;
