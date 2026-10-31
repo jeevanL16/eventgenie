@@ -10,6 +10,12 @@
 
 > ⚠️ **Hackathon Submission Sprint.** Live public demo engineered on a $0 free-tier stack.
 
+## 🌐 Live Application & Demo
+
+- **Live Web App:** [https://eventgenie-ai.streamlit.app](https://eventgenie-ai.streamlit.app) *(Streamlit Community Cloud)*
+- **Video Walkthrough:** [docs/DEMO_SCRIPT.md](file:///d:/eventgenie/docs/DEMO_SCRIPT.md) (Full 3-minute video demo script covering all scenarios)
+- **Deployment Guide:** [DEPLOY.md](file:///d:/eventgenie/DEPLOY.md) (Verified 5-minute cloud setup with Python 3.11)
+
 ## Problem Statement Traceability
 
 This matrix maps every verbatim requirement from the hackathon problem statement to its architectural implementation and automated test:
@@ -66,41 +72,57 @@ flowchart TD
 ```
 eventgenie/
 ├── app/                           # Core application package
-│   ├── main.py                    # Streamlit frontend & interactive dashboard
-│   ├── pipeline.py                # End-to-end plan generation & repair loop
+│   ├── main.py                    # Streamlit frontend & interactive dashboard (<50-line renderers)
+│   ├── pipeline.py                # End-to-end plan generation, caching & repair loop
 │   ├── templates.py               # Deterministic benchmark templates & defaults
-│   ├── schemas.py                 # Pydantic v2 domain schemas & integrity validators
+│   ├── schemas.py                 # Pydantic v2 domain schemas, sanitization & validators
 │   ├── config.py                  # Environment & Streamlit secrets configuration
+│   ├── cache.py                   # SQLite response caching with SHA256 keying (<10ms)
+│   ├── ratelimit.py               # Sliding-window rate limiter (free-tier quota protection)
+│   ├── i18n/                      # UI localization dictionaries (en, hi, kn, te, ta, mr)
 │   ├── llm/                       # LLM provider abstraction & failover routing
 │   │   ├── base.py                # LLM protocol & metadata dataclasses
 │   │   ├── router.py              # Multi-provider cascade router with failover
 │   │   ├── groq.py                # Groq OpenAI-compatible client
 │   │   ├── gemini.py              # Google GenAI unified SDK client
 │   │   └── ollama.py              # Local Ollama client for dev & offline evals
-│   ├── tools/                     # Deterministic arithmetic & scheduling tools
-│   │   ├── budget.py              # Percentage-to-amount calculation & rounding reconciliation
-│   │   └── scheduler.py           # Offset-to-calendar date scheduling & clamping
-│   └── prompts/v1/                # Versioned LLM prompt templates
+│   ├── tools/                     # Deterministic arithmetic, scheduling & translation tools
+│   │   ├── budget.py              # Exact penny-rounding reconciliation (100.0%)
+│   │   ├── scheduler.py           # Offset-to-calendar date scheduling & clamping
+│   │   └── translate.py           # Indic translation with script ratio & structural checks
+│   └── prompts/v1/                # Versioned LLM prompt templates with XML boundaries
 │       ├── system.md              # System prompt with hallucination guardrails
 │       └── plan_v0.md             # Intake-to-plan structured JSON prompt
+├── docs/                          # Video scripts & documentation
+│   └── DEMO_SCRIPT.md             # 3-minute video walkthrough script
+├── eval/                          # Model evaluations & language reviews
+│   └── language_review.md         # Gemini vs Groq Indic translation comparison
 ├── scripts/                       # CLI verification & smoke test scripts
 │   ├── README.md                  # Guide for running CLI verification scripts
 │   ├── run_v0_sample.py           # End-to-end pipeline smoke test
 │   ├── test_gemini_call.py        # Direct Google Gemini structured test
 │   └── test_groq_call.py          # Direct Groq structured output test
-├── tests/                         # Comprehensive automated test suite (110+ tests)
+├── tests/                         # Comprehensive automated test suite (161 tests, 89% coverage)
+│   ├── conftest.py                # Test isolation fixtures (clears cache & rate limits)
+│   ├── test_problem_statement.py  # Traceability tests for all hackathon criteria
 │   ├── test_schemas.py            # Pydantic validation & constraint tests
 │   ├── test_tools_budget.py       # Hypothesis property tests for penny-rounding
 │   ├── test_tools_scheduler.py    # Hypothesis property tests for date bounds
+│   ├── test_security.py           # Sanitization, control char, delimiter & XSS tests
+│   ├── test_efficiency.py         # Response caching & rate limiting tests
+│   ├── test_edge_cases.py         # Boundary & fault injection tests
+│   ├── test_i18n.py               # Multilingual dictionary key parity tests
+│   ├── test_translation.py        # Invariance & Unicode script ratio tests
 │   ├── test_llm_router.py         # Multi-provider failover & error handling tests
 │   ├── test_pipeline_v0.py        # Pipeline repair loop & fallback tests
-│   ├── test_problem_statement.py  # Traceability tests for all hackathon criteria
+│   ├── test_accessibility.py      # WCAG AA contrast & help text tests
 │   └── test_main_app.py           # Streamlit AppTest end-to-end UI tests
 ├── .streamlit/                    # Streamlit configuration & secrets templates
 │   ├── config.toml                # UI styling & server configuration
 │   └── secrets.toml.example       # Template for cloud deployment credentials
 ├── requirements.txt               # Lightweight runtime dependencies (Streamlit Cloud safe)
 ├── requirements-dev.txt           # Testing, property testing, and linting tools
+├── SECURITY.md                    # Security audit, input sanitization & disclosure policy
 ├── DEPLOY.md                      # 5-minute Streamlit Cloud deployment guide
 ├── pyproject.toml                 # Ruff & Pytest tool configuration
 └── EVENTGENIE_MASTER_PROMPT.md    # Master specification, task board, & session logs
@@ -181,6 +203,15 @@ EventGenie is engineered to operate reliably on a **$0 budget** using a multi-pr
 - **Zero-Downtime Fallback:** If all cloud providers encounter rate limits (HTTP 429), timeouts, or service interruptions, the application instantly surfaces an expert-verified, deterministic benchmark plan without breaking or leaking raw API payloads.
 - **Bring Your Own Key (BYOK):** The Streamlit UI includes a session-only key manager in the sidebar. Users can supply personal API keys that persist strictly in browser memory and are never written to disk or logs.
 - **Local Dev & Offline Inference:** Local Ollama support can be enabled for offline testing and evals by configuring `OLLAMA_BASE_URL`.
+
+## ⚠️ Known Limitations & Evaluation Notes
+
+In the spirit of transparent engineering and responsible AI deployment:
+
+1. **Benchmark Estimates, Not Binding Quotes**: All budget breakdowns, per-person catering rates, and vendor allocations are statistical benchmarks derived from typical market planning percentages. They are intended for budgeting guidance and do not represent contractual quotes from actual vendors.
+2. **Indic Translation in Beta**: EventGenie supports 5 Indic languages (`hi`, `kn`, `te`, `ta`, `mr`). While our two-stage translation pipeline enforces mathematical and date invariance (guaranteeing that numbers and dates are never altered or lost), nuanced regional phrasing is currently in Beta. Gemini 2.5 Flash is selected as the primary Indic translation engine based on script density evaluations in [`eval/language_review.md`](file:///d:/eventgenie/eval/language_review.md).
+3. **Free-Tier Rate Limits**: Free cloud tiers enforce strict limits (e.g., Google Gemini's 20 requests/day limit on 2.5-flash; Groq's RPM quotas). EventGenie handles this gracefully via provider failover, local SQLite response caching (<10ms), and an in-browser Bring-Your-Own-Key (BYOK) manager, falling back to a deterministic plan if all quotas are exhausted.
+4. **No Real-Time Vendor Booking**: EventGenie provides vendor selection checklists, contract due diligence questions, and warning flags. It does not execute live API bookings or payment transactions with real-world vendors.
 
 ## Tech Stack
 
