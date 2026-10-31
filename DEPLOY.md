@@ -24,9 +24,11 @@ Follow this 5-minute checklist to deploy EventGenie live to the web.
    - **Branch:** `main`
    - **Main file path:** `app/main.py`
    - **App URL:** (Optional: customize subdomain, e.g. `eventgenie-ai.streamlit.app`)
+5. Under **Advanced settings...**:
+   - Set **Python version** to **3.11** (matches `.python-version` and pre-built wheels).
 
 #### 2. Configure Environment Secrets
-Before clicking Deploy, click **Advanced settings...** to open the Secrets editor, and paste the following configuration:
+In the same **Advanced settings...** modal, paste the following into the **Secrets** editor:
 
 ```toml
 # Provider chain: Cloud-safe failover across Groq and Gemini

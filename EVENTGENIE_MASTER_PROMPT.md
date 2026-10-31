@@ -27,14 +27,14 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 
 | Field | Value |
 |---|---|
-| Last updated | 2026-10-30 |
-| Last completed task | F-06 (Pre-deploy check: full test suite passed, ruff clean, DEPLOY.md created) |
-| Currently in progress | T-09 (Streamlit Community Cloud deployment) |
-| **NEXT TASK** | **T-09** (Deploy to Streamlit Cloud, set keys in secrets, record live demo URL) |
+| Last updated | 2026-10-31 |
+| Last completed task | S-01 (Fix Streamlit deploy: split requirements, remove unneeded packages, add .python-version) |
+| Currently in progress | S-02 (Problem statement alignment) |
+| **NEXT TASK** | **S-02** (Problem statement alignment: README traceability table, verify all 3 event types & 4 outputs) |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | _awaiting deployment URL from share.streamlit.io_ |
 | Blockers | none (remote pushed to https://github.com/jeevanL16/eventgenie.git) |
-| Half-done work / notes for next agent | Fix tasks F-01 through F-06 are complete and committed. 108/108 tests passing, ruff clean, DEPLOY.md instructions ready. Next step is user manual deployment on share.streamlit.io. |
+| Half-done work / notes for next agent | S-01 complete. Clean virtualenv verified. Ready for user redeploy with Python 3.11 selection. S-02 traceability table next. |
 
 ---
 
@@ -279,6 +279,29 @@ eventgenie/
 
 > Each task has an **Acceptance** line. Do not tick until it is true.
 
+### HACKATHON SUBMISSION SPRINT (DEADLINE: ~36H - CRITICAL PRIORITY)
+
+- [x] **S-01** **FIX STREAMLIT DEPLOY (requirements install error)**: Split dependencies: `requirements.txt` = runtime only (`streamlit`, `pandas`, `pydantic`, `groq`, `google-genai`, `httpx`, `python-dotenv`). Remove heavy/unneeded packages (`torch`, `sentence-transformers`, `chromadb`, `weasyprint`, `ics`, `packages.txt`). Use loose lower bounds (`>=`). Add `.python-version` (3.11). Verify clean venv install.
+  *Acceptance:* clean-venv install passes; app starts with no Debian/pip install errors.
+- [ ] **S-02** **PROBLEM STATEMENT ALIGNMENT (High Impact)**: Add README "Problem Statement Traceability" table mapping verbatim requirements (weddings, birthdays, community events, budgets, timelines, vendor checklists, personalized ideas, GenAI) to feature, file/function, and test. Verify all 3 event types generate all 4 outputs with rich personalization (vibe, notes, diet, city, guests).
+  *Acceptance:* traceability table complete; every row has a passing test; 4 clear tabs with self-explanatory UI.
+- [ ] **S-03** **CODE QUALITY (High Impact)**: Clean dead code in `scripts/`, consistent naming, type hints, docstrings, no functions > ~50 lines (split `pipeline.py` into modular components). Centralize constants. Lint clean with `ruff`. Add Mermaid architecture diagram and folder map in README.
+  *Acceptance:* ruff check and format clean; README architecture section complete.
+- [ ] **S-04** **SECURITY (Medium Impact)**: Re-run secrets audit across all git history. Input validation/sanitization (length limits, allowed ranges, control character stripping, no raw `unsafe_allow_html` with user/LLM text). Prompt injection defenses with data-wrapping and Pydantic validation. Friendly error masking. Add `SECURITY.md`.
+  *Acceptance:* tests for input validation and prompt injection pass; SECURITY.md committed.
+- [ ] **S-05** **EFFICIENCY (Medium Impact)**: Add response caching (`cache.py`) and per-session rate limit (`ratelimit.py`) with friendly busy message. Concurrent execution for multi-step components. Keep repo size under 10 MB (`du -sh .git` reported in docs).
+  *Acceptance:* second identical request is instant; repo size verified under 10 MB.
+- [ ] **S-06** **TESTING (Medium Impact)**: Add `pytest-cov`, reach 85%+ core coverage, report real coverage number in README. Add edge-case tests (negative budget, past date, huge guests, malformed JSON, router failure). Green CI badge.
+  *Acceptance:* CI green; real measured coverage reported.
+- [ ] **S-07** **ACCESSIBILITY (Medium Impact)**: Form inputs with clear labels and help text; no color- or emoji-only status indicators; high contrast; text/table alternative for every visual; keyboard navigable; Accessibility section in README.
+  *Acceptance:* accessibility checklist in README; no color-only meaning in UI.
+- [ ] **S-08** **MULTILINGUAL MINIMUM VIABLE (Differentiator)**: Implement T-16 (i18n UI strings), T-17 (category key + label), T-18 (translate_plan with structural check and fallback) for `hi`, `kn`, `te`, `ta`, `mr`. Compare at least 2 models in `eval/language_review.md` and use the best. Label Beta.
+  *Acceptance:* 5 Indic languages verified with structural check passing; review logged.
+- [ ] **S-09** **SUBMISSION PACKAGE**: Comprehensive README (live URL, problem/solution, traceability table, architecture diagram, screenshots, test badge, limitations, free-tier notes); `DEPLOY.md`; video demo script in `docs/DEMO_SCRIPT.md`. Confirm repo public and < 10 MB.
+  *Acceptance:* submission package complete, verified, and self-contained.
+- [ ] **S-10** **FINAL CHECK**: Full checklist execution: clean-venv install, pytest, ruff, secrets audit, repo size, live app verification in English and Indic language, honest metrics in docs.
+  *Acceptance:* all verification checks green; final report produced.
+
 ### PHASE 0: Setup
 
 - [x] **T-01** Create repo skeleton from Section 8, `.gitignore` (include `.env`, `data/*.db`, `__pycache__`), `requirements.txt`, `.env.example` (`GEMINI_API_KEY`, `LLM_PROVIDER`, `GROQ_API_KEY`), basic `README.md` stub.
@@ -453,6 +476,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | D-6 | 2026-10-30 | Gemini free quota on Flash is too low for reliable demos. Add a provider router with failover. | Free-tier daily limits block continuous usage; router with Groq and Gemini provides resilient multi-provider failover |
 | D-7 | 2026-10-30 | Ollama excluded from cloud chain (default LLM_CHAIN becomes groq,gemini) | Cloud hosting environments lack local Ollama daemon; prevent network connection timeouts by requiring explicit OLLAMA_BASE_URL for local runs |
 | D-8 | 2026-10-30 | Default Groq model set to qwen/qwen3.8-27b | Verified live against the Groq API model catalog for active tier; delivers fast structured JSON output |
+| D-9 | 2026-10-31 | Split runtime dependencies in requirements.txt from test/dev tooling in requirements-dev.txt; remove unused packages.txt | Prevents build failures on Streamlit Community Cloud caused by Debian apt package incompatibilities and testing tool bloat |
 
 ---
 
@@ -480,6 +504,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | F-04 | Implemented sanitize_error_message in app/pipeline.py to prevent raw JSON/429 RPC error dumps from leaking to UI; updated main.py warnings; added simulated 429 unit and AppTests | app/pipeline.py, app/main.py, tests/test_llm_router.py, tests/test_main_app.py, EVENTGENIE_MASTER_PROMPT.md | 14/14 tests pass, ruff clean |
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | F-05 | Added get_available_groq_models helper; aligned Decision Log numbering (D-5, D-6, D-7, D-8); updated README with Free-Tier Limits & Provider Failover section | app/llm/groq.py, tests/test_llm_groq.py, README.md, EVENTGENIE_MASTER_PROMPT.md | 9 unit tests pass, README updated |
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | F-06 | Pre-deploy check: full test suite verified (108 tests passing), ruff clean; created DEPLOY.md deployment guide; reordered remaining roadmap post-deploy | DEPLOY.md, tests/test_main_app.py, tests/test_pipeline_v0.py, EVENTGENIE_MASTER_PROMPT.md | 108/108 tests pass, ruff clean, ready for T-09 |
+| 2026-10-31 | Antigravity Gemini 3.8 Flash | S-01 | Fixed Streamlit deploy: streamlined requirements.txt to runtime-only packages, moved test tools to requirements-dev.txt, deleted packages.txt, added .python-version (3.11), verified clean venv install | requirements.txt, requirements-dev.txt, packages.txt, .python-version, DEPLOY.md, EVENTGENIE_MASTER_PROMPT.md | Clean venv pip install and imports verified |
 
 ---
 
