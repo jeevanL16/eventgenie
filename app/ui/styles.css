@@ -76,19 +76,20 @@ header[data-testid="stHeader"] {background: transparent !important;}
 /* --- Skip-to-content accessibility link --- */
 .skip-link {
     position: absolute;
-    top: -100px;
-    left: var(--sp-4);
+    top: var(--sp-4);
+    left: -9999px;
     background: var(--accent-gold-bg);
     color: var(--btn-text);
     padding: var(--sp-2) var(--sp-4);
     border-radius: var(--radius-sm);
     font-weight: 600;
-    z-index: 10000;
+    z-index: 100000;
     text-decoration: none;
     font-family: var(--font-body);
 }
 .skip-link:focus {
-    top: var(--sp-4);
+    left: var(--sp-4);
+    outline: 3px solid var(--text-heading);
 }
 
 /* --- Sticky Navigation Bar --- */

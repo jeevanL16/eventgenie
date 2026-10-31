@@ -28,13 +28,13 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-31 |
-| Last completed task | B-01 (Raw HTML code block fix: render_html utility, dedented components, test_ui_html.py) |
-| Currently in progress | B-02 (Skip link visual hiding) |
-| **NEXT TASK** | **B-02** (Skip link visual hiding off-screen until focused) |
+| Last completed task | B-02 (Skip link visual hiding off-screen until focused) |
+| Currently in progress | B-03 (Link and button styling and contrast) |
+| **NEXT TASK** | **B-03** (Scoped link and button styling with WCAG AA contrast) |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | https://eventgenie-wmmqmbsrg82sl7nacr8az3.streamlit.app/ |
 | Blockers | none (remote pushed to https://github.com/jeevanL16/eventgenie.git) |
-| Half-done work / notes for next agent | B-01 complete. Proceed to B-02 (Skip link visibility fix). |
+| Half-done work / notes for next agent | B-02 complete. Proceed to B-03 (Link and button styling). |
 
 ---
 
@@ -396,7 +396,7 @@ eventgenie/
 
 - [x] **B-01** **RAW HTML CODE BLOCK FIX**: Create `app/ui/html.py:render_html()` that normalizes indentation via `textwrap.dedent().strip()` and strips blank lines inside HTML blocks before passing to `st.markdown(..., unsafe_allow_html=True)`. Route all custom HTML in `components.py` through `render_html()`.
   *Acceptance:* test verifies no HTML snippet starts lines with 4+ spaces before `<` or empty lines; AppTest verifies no raw code blocks in sample preview.
-- [ ] **B-02** **SKIP LINK VISIBILITY**: Hide `.skip-link` visually off-screen (`left: -9999px`) until `:focus` brings it into view.
+- [x] **B-02** **SKIP LINK VISIBILITY**: Hide `.skip-link` visually off-screen (`left: -9999px`) until `:focus` brings it into view.
   *Acceptance:* skip-link is off-screen by default and accessible upon tab focus.
 - [ ] **B-03** **LINK AND BUTTON STYLING**: Scoped CSS overrides for `.stMarkdown a.eg-btn`, `.stMarkdown .eg-nav a`, `.stMarkdown .eg-brand` with explicit color, `text-decoration: none !important`, and visible focus rings; verify WCAG AA contrast.
   *Acceptance:* links and buttons render in plum/gold without default Streamlit blue/underline overrides.
@@ -523,6 +523,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | D-19 | 2026-10-31 | Eventplus-inspired landing page architecture with CSS variable design system, Google Fonts, and modular UI components | Transformed simple intake form into a professional event-company web application (sticky nav, hero with honest stats, 3 event cards, 3-step guide, sample preview, 4-column footer) while maintaining 100% WCAG AA contrast and zero hardcoded text |
 | D-20 | 2026-10-31 | Deployed to Streamlit Community Cloud with verified live URL | Verified live public deployment at https://eventgenie-wmmqmbsrg82sl7nacr8az3.streamlit.app/ running Python 3.11 with automated secrets injection |
 | D-21 | 2026-10-31 | Raw HTML normalization via render_html and clean_html_string | Prevents Streamlit's Markdown parser from misinterpreting indented HTML lines (4+ spaces) and empty lines as raw code blocks |
+| D-22 | 2026-10-31 | Visually hide skip link off-screen until focused | Ensures skip link remains off-screen (left: -9999px) during visual browsing but immediately brings into view upon tab navigation with prominent outline |
 
 ---
 
@@ -563,6 +564,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | U-01 to U-08 | Redesigned Streamlit UI into professional event-company landing page (eventplus-inspired): app/ui/styles.css (design tokens, Playfair Display + Inter, Indic fallbacks), app/ui/theme.py, app/ui/components.py (nav_bar, hero, event_cards, how_it_works, sample_preview, cta_banner, footer), refactored main.py, updated all 6 i18n JSONs with zero empty placeholders, added docs/screens/landing_page_layout.svg, added tests/test_landing_page.py (166 tests passing, 90% coverage) | app/ui/styles.css, app/ui/theme.py, app/ui/components.py, app/main.py, app/i18n/*.json, tests/test_landing_page.py, docs/screens/landing_page_layout.svg, README.md, EVENTGENIE_MASTER_PROMPT.md | 166/166 tests pass, 90% coverage, 0 ruff errors, 894 KiB repo |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | T-09 | Live deployment verified on Streamlit Community Cloud at https://eventgenie-wmmqmbsrg82sl7nacr8az3.streamlit.app/; updated README, DEMO_SCRIPT.md, and master tracking file with verified live URL | EVENTGENIE_MASTER_PROMPT.md, README.md, docs/DEMO_SCRIPT.md | Live app operational and accessible to evaluators |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | B-01 | Implemented app/ui/html.py:render_html and clean_html_string; routed all components through render_html; eliminated 4+ space indentation and blank lines; added tests/test_ui_html.py | app/ui/html.py, app/ui/components.py, app/main.py, tests/test_ui_html.py, EVENTGENIE_MASTER_PROMPT.md | 3 new unit & AppTests pass, no code blocks in preview |
+| 2026-10-31 | Antigravity Gemini 3.8 Flash | B-02 | Positioned .skip-link off-screen (left: -9999px) by default and brought into view on :focus with high-contrast outline; added regression test | app/ui/styles.css, tests/test_landing_page.py, EVENTGENIE_MASTER_PROMPT.md | Skip link accessible, test_landing_page.py passes |
 
 ---
 

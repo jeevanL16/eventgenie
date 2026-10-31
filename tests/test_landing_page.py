@@ -64,6 +64,15 @@ class TestLandingPageComponents:
         assert "eg-cta-banner" in html_content
         assert "eg-footer" in html_content
 
+    def test_skip_link_css_offscreen_until_focus(self):
+        """Skip link must be positioned off-screen (-9999px) until focused."""
+        css_path = Path(__file__).resolve().parent.parent / "app" / "ui" / "styles.css"
+        css_text = css_path.read_text(encoding="utf-8")
+        assert ".skip-link" in css_text
+        assert "left: -9999px;" in css_text
+        assert ".skip-link:focus" in css_text
+        assert "left: var(--sp-4);" in css_text
+
     def test_event_card_buttons_exist_and_set_selection(self):
         """Clicking an event-type card button sets session state to that event type."""
         at = AppTest.from_file(MAIN_APP_PATH, default_timeout=20)
