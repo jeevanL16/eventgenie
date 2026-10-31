@@ -3,8 +3,8 @@
 **GenAI-powered planning assistant that helps users organize weddings, birthdays, and community events with budgets, timelines, vendor checklists, and personalized ideas.**
 
 [![CI](https://github.com/jeevanL16/eventgenie/actions/workflows/ci.yml/badge.svg)](https://github.com/jeevanL16/eventgenie/actions)
-![Coverage](https://img.shields.io/badge/Coverage-90%25-brightgreen)
-![Tests](https://img.shields.io/badge/Tests-135%20Passing-success)
+![Coverage](https://img.shields.io/badge/Coverage-89%25-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-161%20Passing-success)
 ![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
@@ -150,6 +150,8 @@ EventGenie maintains an extensive automated test suite with **90% core coverage*
 | [`tests/test_edge_cases.py`](file:///d:/eventgenie/tests/test_edge_cases.py) | Past dates, negative budgets, huge guest bounds (100k), malformed JSON, total router failure | 5 tests |
 | [`tests/test_main_app.py`](file:///d:/eventgenie/tests/test_main_app.py) | End-to-end Streamlit UI integration (`AppTest`) | 4 tests |
 | [`tests/test_accessibility.py`](file:///d:/eventgenie/tests/test_accessibility.py) | WCAG AA compliance: input help annotations, non-color-only markers | 2 tests |
+| [`tests/test_i18n.py`](file:///d:/eventgenie/tests/test_i18n.py) | Complete key parity across all 6 language dictionaries (en, hi, kn, te, ta, mr) | 7 tests |
+| [`tests/test_translation.py`](file:///d:/eventgenie/tests/test_translation.py) | Structural invariance, Unicode script ratio checks, and Indic translation flow | 19 tests |
 
 To run the complete test suite with coverage reporting:
 ```bash

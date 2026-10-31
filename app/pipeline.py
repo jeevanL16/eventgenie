@@ -38,6 +38,7 @@ from app.templates import (
 )
 from app.tools.budget import calculate_budget
 from app.tools.scheduler import schedule_tasks
+from app.tools.translate import _translate_deterministic_fallback, translate_plan
 
 logger = logging.getLogger(__name__)
 
@@ -123,8 +124,8 @@ def fallback_plan(inputs: PlanInputs | dict[str, Any]) -> EventPlan:
         "All prices and percentage allocations are labelled estimates and require local vendor confirmation.",
     ]
 
-    return EventPlan(
-        lang=validated_inputs.lang,
+    base_plan = EventPlan(
+        lang="en",
         event_type=validated_inputs.event_type,
         event_date=validated_inputs.event_date,
         guests=validated_inputs.guests,
@@ -138,6 +139,10 @@ def fallback_plan(inputs: PlanInputs | dict[str, Any]) -> EventPlan:
         assumptions=assumptions,
         sources_used=["EventGenie Verified Benchmark Template Knowledge Base"],
     )
+
+    if validated_inputs.lang != "en":
+        return _translate_deterministic_fallback(base_plan, validated_inputs.lang)
+    return base_plan
 
 
 def _assemble_event_plan(proposal: PlanProposalV0, inputs: PlanInputs) -> EventPlan:
@@ -367,10 +372,15 @@ def generate_plan_v0(
         if not is_byok:
             default_rate_limiter.record(session_id)
 
+        notices: list[str] = []
+        if validated_inputs.lang != "en":
+            plan, trans_notices = translate_plan(plan, validated_inputs.lang, client)
+            notices.extend(trans_notices)
+
         result = GenerationResult(
             plan=plan,
             is_fallback=False,
-            notices=[],
+            notices=notices,
             metadata=getattr(client, "last_metadata", None),
             provider=active_provider,
         )
