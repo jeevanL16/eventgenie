@@ -13,6 +13,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ValidationError
 
 from app import config
+from app.cache import compute_cache_key, default_cache
 from app.llm import (
     LLM,
     LLMAuthError,
@@ -22,6 +23,7 @@ from app.llm import (
     LLMValidationError,
     get_llm,
 )
+from app.ratelimit import default_rate_limiter
 from app.schemas import (
     EventPlan,
     IdeaSet,
@@ -81,6 +83,7 @@ class GenerationResult:
     notices: list[str]
     metadata: LLMMetadata | None = None
     provider: str | None = None
+    cached: bool = False
 
 
 def load_prompt(filename: str) -> str:
@@ -296,14 +299,41 @@ def generate_plan_v0(
     inputs: PlanInputs | dict[str, Any],
     llm: LLM | None = None,
     max_repairs: int = 2,
+    session_id: str = "default",
+    use_cache: bool = True,
 ) -> GenerationResult:
-    """Generate an event plan using single-call LLM generation with repair loop and fallback."""
+    """Generate an event plan with caching, rate limiting, repair loop, and fallback."""
     if isinstance(inputs, dict):
         validated_inputs = PlanInputs.model_validate(inputs)
     elif isinstance(inputs, PlanInputs):
         validated_inputs = inputs
     else:
         raise TypeError(f"Expected PlanInputs or dict, got {type(inputs)}")
+
+    # 1. Check Rate Limit (only enforced when using shared server credentials, not custom BYOK)
+    is_byok = llm is not None
+    if not is_byok:
+        allowed, limit_msg = default_rate_limiter.is_allowed(session_id)
+        if not allowed:
+            logger.warning("Session %s exceeded rate limit: %s", session_id, limit_msg)
+            fb_plan = fallback_plan(validated_inputs)
+            fb_plan.assumptions.insert(0, limit_msg)
+            return GenerationResult(
+                plan=fb_plan,
+                is_fallback=True,
+                notices=[limit_msg or "Rate limit exceeded."],
+                provider="rate_limit",
+            )
+
+    # 2. Check Cache
+    raw_provider = getattr(llm, "active_provider", "")
+    provider_str = raw_provider if isinstance(raw_provider, str) else ""
+    cache_key = compute_cache_key(validated_inputs, provider_str)
+    if use_cache:
+        cached_res = default_cache.get(cache_key)
+        if cached_res is not None:
+            logger.info("Serving plan from response cache (key: %s)", cache_key[:8])
+            return cached_res
 
     client, fallback_res = _resolve_llm_client(llm, validated_inputs)
     if fallback_res is not None or client is None:
@@ -327,16 +357,26 @@ def generate_plan_v0(
     )
 
     if plan is not None:
-        active_provider = getattr(client, "active_provider", None) or getattr(
-            client, "__class__", type(client)
-        ).__name__.lower().replace("llm", "")
-        return GenerationResult(
+        raw_active = getattr(client, "active_provider", None)
+        active_provider = (
+            raw_active
+            if isinstance(raw_active, str)
+            else getattr(client, "__class__", type(client)).__name__.lower().replace("llm", "")
+        )
+
+        if not is_byok:
+            default_rate_limiter.record(session_id)
+
+        result = GenerationResult(
             plan=plan,
             is_fallback=False,
             notices=[],
             metadata=getattr(client, "last_metadata", None),
             provider=active_provider,
         )
+        if use_cache:
+            default_cache.set(cache_key, result)
+        return result
 
     # Fallback path if repairs exhausted or LLM failed
     logger.error("All generation attempts failed. Using fallback template plan: %s", error)

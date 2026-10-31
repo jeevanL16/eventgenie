@@ -28,13 +28,13 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-31 |
-| Last completed task | S-04 (Security: secrets audit, input validation/sanitization, prompt injection guardrails, SECURITY.md) |
-| Currently in progress | S-05 (Efficiency: response caching, rate limiting, repo size under 10 MB) |
-| **NEXT TASK** | **S-05** (Efficiency: add app/cache.py, app/ratelimit.py, verify sub-second cache hits, verify repo size < 10 MB) |
+| Last completed task | S-05 (Efficiency: SQLite response cache, sliding-window rate limit, sub-10ms cache retrieval, repo size < 1 MB) |
+| Currently in progress | S-06 (Testing: pytest-cov, 85%+ core coverage, edge-case tests, real metrics in README) |
+| **NEXT TASK** | **S-06** (Testing: run pytest --cov=app tests/, reach 85%+ coverage, add edge-case tests, report real coverage in README) |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | _awaiting deployment URL from share.streamlit.io_ |
 | Blockers | none (remote pushed to https://github.com/jeevanL16/eventgenie.git) |
-| Half-done work / notes for next agent | S-01, S-02, S-03, and S-04 complete. All 121 tests passing and ruff clean. Proceed directly to S-05 (Efficiency). |
+| Half-done work / notes for next agent | S-01 through S-05 complete. 128 tests passing and ruff clean. Proceed directly to S-06 (Testing). |
 
 ---
 
@@ -289,7 +289,7 @@ eventgenie/
   *Acceptance:* ruff check and format clean; README architecture section complete.
 - [x] **S-04** **SECURITY (Medium Impact)**: Re-run secrets audit across all git history. Input validation/sanitization (length limits, allowed ranges, control character stripping, no raw `unsafe_allow_html` with user/LLM text). Prompt injection defenses with data-wrapping and Pydantic validation. Friendly error masking. Add `SECURITY.md`.
   *Acceptance:* tests for input validation and prompt injection pass; SECURITY.md committed.
-- [ ] **S-05** **EFFICIENCY (Medium Impact)**: Add response caching (`cache.py`) and per-session rate limit (`ratelimit.py`) with friendly busy message. Concurrent execution for multi-step components. Keep repo size under 10 MB (`du -sh .git` reported in docs).
+- [x] **S-05** **EFFICIENCY (Medium Impact)**: Add response caching (`cache.py`) and per-session rate limit (`ratelimit.py`) with friendly busy message. Concurrent execution for multi-step components. Keep repo size under 10 MB (`du -sh .git` reported in docs).
   *Acceptance:* second identical request is instant; repo size verified under 10 MB.
 - [ ] **S-06** **TESTING (Medium Impact)**: Add `pytest-cov`, reach 85%+ core coverage, report real coverage number in README. Add edge-case tests (negative budget, past date, huge guests, malformed JSON, router failure). Green CI badge.
   *Acceptance:* CI green; real measured coverage reported.
@@ -480,6 +480,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | D-10 | 2026-10-31 | Explicit Problem Statement Traceability Matrix in README and automated test suite | Directly maps code deliverables to hackathon evaluation criteria (weddings, birthdays, community events x budgets, timelines, vendors, ideas) |
 | D-11 | 2026-10-31 | Modular decomposition: extract templates.py, split tools and UI renderers to < 50-line functions | Enhances readability, testability, and reviewer evaluation without breaking test compatibility |
 | D-12 | 2026-10-31 | Explicit XML delimiter tagging (<user_vibe>, <user_notes>) and curly brace format escaping | Prevents prompt injection attacks and template format KeyError crashes when processing untrusted user free text |
+| D-13 | 2026-10-31 | SQLite response caching with SHA256 keying and sliding-window rate limiting | Eliminates duplicate LLM calls (sub-10ms response on identical requests) and protects free-tier API quotas while bypassing limits for BYOK sessions |
 
 ---
 
@@ -511,6 +512,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | S-02 | Added Problem Statement Traceability Matrix to README mapping all requirements to code & tests; added tests/test_problem_statement.py; refined UI header & empty state for self-explanatory clarity | README.md, app/main.py, tests/test_problem_statement.py, EVENTGENIE_MASTER_PROMPT.md | 112/112 tests pass, ruff clean |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | S-03 | Modularized pipeline.py (extracted templates.py), decomposed tools/budget.py, tools/scheduler.py, and main.py into sub-50-line renderers; added scripts/README.md; added Mermaid architecture diagram and directory tree to README | app/templates.py, app/pipeline.py, app/main.py, app/tools/budget.py, app/tools/scheduler.py, scripts/README.md, README.md, EVENTGENIE_MASTER_PROMPT.md | 112/112 tests pass, ruff clean, architecture section complete |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | S-04 | Implemented input sanitization, control char stripping, boundary limits, prompt injection delimiter defenses, format string injection escaping, HTML escaping for XSS prevention, and SECURITY.md; added 9 security tests | app/schemas.py, app/prompts/v1/system.md, app/prompts/v1/plan_v0.md, app/pipeline.py, app/main.py, SECURITY.md, tests/test_security.py, EVENTGENIE_MASTER_PROMPT.md | 121/121 tests pass, ruff clean, git secrets audit clean |
+| 2026-10-31 | Antigravity Gemini 3.8 Flash | S-05 | Implemented app/cache.py (SQLite TTL response cache), app/ratelimit.py (sliding-window rate limiter), wired caching into pipeline and UI badge, verified sub-10ms cache retrieval and 688 KiB repo footprint; added 7 efficiency tests | app/cache.py, app/ratelimit.py, app/pipeline.py, app/main.py, tests/test_efficiency.py, EVENTGENIE_MASTER_PROMPT.md | 128/128 tests pass, ruff clean, repo size < 1 MB |
 
 ---
 

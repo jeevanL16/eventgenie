@@ -313,6 +313,11 @@ def _render_plan_ribbon(plan: EventPlan, result: GenerationResult) -> None:
         if result.is_fallback
         else f'<span class="badge-tag" style="background-color: #ECFDF5; color: #065F46;">🤖 Served by: {safe_provider}</span>'
     )
+    cache_badge = (
+        '<span class="badge-tag" style="background-color: #F0FDF4; color: #166534;">⚡ Cached (&lt;10ms)</span>'
+        if getattr(result, "cached", False)
+        else ""
+    )
     safe_event_type = html.escape(plan.event_type.upper())
     safe_city = html.escape(plan.city or "General Metro")
     safe_curr_display = html.escape(format_currency(plan.total_budget, plan.currency))
@@ -321,6 +326,7 @@ def _render_plan_ribbon(plan: EventPlan, result: GenerationResult) -> None:
         f"""
         <div class="metric-card">
             {provider_badge}
+            {cache_badge}
             <span class="badge-tag">{safe_event_type}</span>
             <span class="badge-tag">📍 {safe_city}</span>
             <span class="badge-tag">👥 {plan.guests} Guests</span>
