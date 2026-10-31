@@ -28,13 +28,13 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-31 |
-| Last completed task | B-06 (Mobile and multilingual verification: 390px responsive rules, font stacks, 176 tests passing at 90% coverage) |
-| Currently in progress | none |
-| **NEXT TASK** | **T-22** (Write knowledge base under knowledge/ and culture/) |
+| Last completed task | C-01 (Force light theme via .streamlit/config.toml) |
+| Currently in progress | C-02 (Widget and label styling in styles.css) |
+| **NEXT TASK** | **C-02** (Scoped widget and label styling in styles.css) |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | https://eventgenie-wmmqmbsrg82sl7nacr8az3.streamlit.app/ |
 | Blockers | none (remote pushed to https://github.com/jeevanL16/eventgenie.git) |
-| Half-done work / notes for next agent | All B-01 to B-06 UI bug fixes complete, tested, and synced. Proceed to Phase 4 (RAG and grounding: T-22). |
+| Half-done work / notes for next agent | C-01 complete. Proceed to C-02 (Widget and label styling). |
 
 ---
 
@@ -407,6 +407,19 @@ eventgenie/
 - [x] **B-06** **MOBILE & MULTILINGUAL VERIFICATION**: Responsive layout at 390px width; verified in Hindi and Kannada with zero tofu boxes; full pytest suite passes; pushed to GitHub.
   *Acceptance:* all tests green, ruff clean, remote synced.
 
+### PHASE 3.7: Planner Section & Light Theme Contrast Fixes (C-01 to C-05)
+
+- [x] **C-01** **FORCE LIGHT THEME**: Create `.streamlit/config.toml` configuring base="light", primaryColor="#F5A623", backgroundColor="#FBF7F0", secondaryBackgroundColor="#FFFFFF", textColor="#2D1B4E", font="sans serif"; ensure tracked in git.
+  *Acceptance:* `.streamlit/config.toml` exists, tracked in git, specifies light theme tokens.
+- [ ] **C-02** **WIDGET AND LABEL STYLING**: Scoped CSS in `styles.css` for `.stWidgetLabel`, `label p`, `input`, `select`, `date_input`, `number_input` with white background, `#CDBFA8` border, `#2D1B4E` text, 10px radius, visible focus ring; visible dropdown menus, popovers, and number stepper buttons.
+  *Acceptance:* CSS styles exist and target widget selectors; AppTest confirms inputs render with readable dark text on white.
+- [ ] **C-03** **BUTTON STYLING & CONTRAST**: Quick demo buttons and all `st.button` styled in saffron (`#F5A623`) or white with plum text (`#2D1B4E`), min-height 44px, visible focus ring; primary "Generate my plan" button prominent; contrast >= 4.5:1.
+  *Acceptance:* CSS rules enforce 44px touch targets and plum on saffron/white styling.
+- [ ] **C-04** **INFO/NOTICE BANNER CONTRAST**: Alert containers (`st.info`, `st.warning`, `st.success`, `st.error`) use dark ink text (`#2D1B4E`) on tinted backgrounds with icon AND text (never color alone); WCAG AA contrast verified.
+  *Acceptance:* alert containers have dark ink text with >= 4.5:1 contrast.
+- [ ] **C-05** **VERIFY CONTRAST & NAV ANCHORS**: Automated contrast tests assert >= 4.5:1 body text and >= 3:1 UI borders; update `docs/ACCESSIBILITY.md`; fix nav anchor IDs (`#planner-section`, `#how-it-works`, `#home`, `#about`); verify light theme persistence under dark OS mode; full test suite passes.
+  *Acceptance:* all tests green, 0 ruff errors, remote synced.
+
 ### PHASE 4: RAG and grounding
 
 - [ ] **T-22** Write the knowledge base (original text, 20 to 40 short markdown files) under `knowledge/` including `culture/` per Section 5 rule 8.
@@ -528,6 +541,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | D-24 | 2026-10-31 | Clean removal of Streamlit default chrome and sticky nav z-index | Completely hides Streamlit header/toolbar/decorations/footer and adds 70px block container top padding to eliminate visual overlap with the sticky 60px nav bar |
 | D-25 | 2026-10-31 | Hero stat badges deduplication and padding compaction | Decoupled leading digits from label strings across all 6 language JSONs to display clean single numbers ('6' + 'Languages', not '6' + '6 Languages') and reduced hero vertical padding |
 | D-26 | 2026-10-31 | Mobile 390px responsive rules and Indic font fallback stack | Added <=480px touch-target rules (min-height: 44px) and single-column flex-stacking; confirmed Noto Sans Indic fallbacks eliminate tofu boxes in hi, kn, te, ta, mr |
+| D-27 | 2026-10-31 | Force Streamlit light theme via repository .streamlit/config.toml | Configured base='light' and explicit palette tokens (#F5A623, #FBF7F0, #FFFFFF, #2D1B4E) to prevent dark mode OS from rendering dark inputs on light background |
 
 ---
 
@@ -573,6 +587,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | B-04 | Hid Streamlit default chrome (header, toolbar, footer) cleanly via CSS; set .eg-nav height 60px, z-index 99999; added 70px body padding; added test | app/ui/styles.css, tests/test_landing_page.py, EVENTGENIE_MASTER_PROMPT.md | 9/9 landing page tests pass, sticky nav unobscured |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | B-05 | Polished hero stat labels across all 6 language JSONs (single number + label); reduced hero vertical padding to compact layout; added unit and AppTest | app/i18n/*.json, app/ui/styles.css, tests/test_landing_page.py, EVENTGENIE_MASTER_PROMPT.md | 10/10 landing page tests pass, all 6 languages verified |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | B-06 | Added mobile 390px / <=480px responsive rules, min-height 44px touch targets; verified Indic font stack rendering with no tofu characters; full 176 test suite passing at 90% coverage; pushed to GitHub | app/ui/styles.css, tests/test_landing_page.py, EVENTGENIE_MASTER_PROMPT.md | 176/176 tests pass, 90% coverage, 0 ruff errors, synced to main |
+| 2026-10-31 | Antigravity Gemini 3.8 Flash | C-01 | Created .streamlit/config.toml to force light theme (base='light', primaryColor='#F5A623', backgroundColor='#FBF7F0', secondaryBackgroundColor='#FFFFFF', textColor='#2D1B4E'); added unit test | .streamlit/config.toml, tests/test_config.py, EVENTGENIE_MASTER_PROMPT.md | 5/5 config tests pass, prevents OS dark mode from breaking UI |
 
 ---
 

@@ -36,3 +36,18 @@ def test_get_setting_when_secrets_raises_file_not_found():
     with patch.dict("os.environ", {}, clear=True):
         with patch.dict("sys.modules", {"streamlit": mock_st}):
             assert get_setting("MISSING_KEY", default="fallback_val") == "fallback_val"
+
+
+def test_streamlit_theme_config_exists_and_forces_light_mode():
+    """Task C-01: .streamlit/config.toml forces light theme with accessible brand colors."""
+    from pathlib import Path
+
+    config_path = Path(__file__).resolve().parent.parent / ".streamlit" / "config.toml"
+    assert config_path.exists(), ".streamlit/config.toml must exist"
+    content = config_path.read_text(encoding="utf-8")
+    assert "[theme]" in content
+    assert 'base = "light"' in content or 'base="light"' in content
+    assert 'primaryColor = "#F5A623"' in content
+    assert 'backgroundColor = "#FBF7F0"' in content
+    assert 'secondaryBackgroundColor = "#FFFFFF"' in content
+    assert 'textColor = "#2D1B4E"' in content
