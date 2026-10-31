@@ -12,7 +12,7 @@
 
 ## 🌐 Live Application & Demo
 
-- **Live Web App:** [https://eventgenie-ai.streamlit.app](https://eventgenie-ai.streamlit.app) *(Streamlit Community Cloud)*
+- **Live Web App:** [https://eventgenie-wmmqmbsrg82sl7nacr8az3.streamlit.app/](https://eventgenie-wmmqmbsrg82sl7nacr8az3.streamlit.app/) *(Streamlit Community Cloud)*
 - **Video Walkthrough:** [docs/DEMO_SCRIPT.md](file:///d:/eventgenie/docs/DEMO_SCRIPT.md) (Full 3-minute video demo script covering all scenarios)
 - **Deployment Guide:** [DEPLOY.md](file:///d:/eventgenie/DEPLOY.md) (Verified 5-minute cloud setup with Python 3.11)
 

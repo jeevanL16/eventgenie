@@ -4,7 +4,7 @@
 **Target Duration:** 3 minutes (180 seconds)  
 **Presenter:** Engineering Lead / Hackathon Submitter  
 **Target Audience:** Hackathon Evaluators, Technical Judges, Community Organizers  
-**Live URL:** [https://eventgenie-ai.streamlit.app](https://eventgenie-ai.streamlit.app) *(or local preview via `streamlit run app/main.py`)*  
+**Live URL:** [https://eventgenie-wmmqmbsrg82sl7nacr8az3.streamlit.app/](https://eventgenie-wmmqmbsrg82sl7nacr8az3.streamlit.app/) *(Live on Streamlit Community Cloud)*  
 **Public Repository:** [https://github.com/jeevanL16/eventgenie](https://github.com/jeevanL16/eventgenie)
 
 ---

@@ -28,13 +28,13 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-31 |
-| Last completed task | U-08 (Landing page redesign & UI design system: sticky nav, hero, event cards, how it works, sample preview, footer, 166 tests) |
+| Last completed task | T-09 (Live deployment to Streamlit Community Cloud verified at https://eventgenie-wmmqmbsrg82sl7nacr8az3.streamlit.app/) |
 | Currently in progress | PHASE 4: RAG and grounding |
 | **NEXT TASK** | **T-22** (Write knowledge base files under knowledge/) |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
-| Live demo URL | https://eventgenie-ai.streamlit.app *(or local preview via streamlit run app/main.py)* |
+| Live demo URL | https://eventgenie-wmmqmbsrg82sl7nacr8az3.streamlit.app/ |
 | Blockers | none (remote pushed to https://github.com/jeevanL16/eventgenie.git) |
-| Half-done work / notes for next agent | U-01 through U-08 complete. 166 tests passing with 90% core coverage. Proceed to T-22 (RAG knowledge base). |
+| Half-done work / notes for next agent | T-09 verified live on Streamlit Cloud. All S-01..S-10 and U-01..U-08 complete. 166 tests passing with 90% core coverage. Proceed to T-22 (RAG knowledge base). |
 
 ---
 
@@ -343,7 +343,7 @@ eventgenie/
   *Acceptance:* master prompt and README consistent with codebase.
 - [x] **F-06** Pre-deploy check: full pytest suite and ruff checks pass; create `DEPLOY.md` with step-by-step Streamlit Cloud deployment instructions and secrets template.
   *Acceptance:* green pytest and ruff; complete 5-minute deployment guide.
-- [ ] **T-09** **Deploy v0** to Streamlit Community Cloud (or Hugging Face Spaces). Add key as a secret. Add "Estimates only, not real prices" notice.
+- [x] **T-09** **Deploy v0** to Streamlit Community Cloud (or Hugging Face Spaces). Add key as a secret. Add "Estimates only, not real prices" notice.
   *Acceptance:* public URL works from a fresh browser. Record URL in Section 1.
 
 ### PHASE 2: Quota Protection, Architecture & Multilingual Core (Reordered post-deploy)
@@ -506,6 +506,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | D-17 | 2026-10-31 | Complete submission package with 3-minute video walkthrough script and explicit limitation disclosures | Ensures complete transparency for evaluators regarding benchmark estimates, free-tier rate limits, and beta Indic translations while providing a ready-to-record demo script |
 | D-18 | 2026-10-31 | Final verification audit and deployment certification | Confirmed 161 tests passing (89% coverage), 0 ruff errors, clean secrets audit, sub-1 MB repository footprint, and validated live generation in English and Indic languages |
 | D-19 | 2026-10-31 | Eventplus-inspired landing page architecture with CSS variable design system, Google Fonts, and modular UI components | Transformed simple intake form into a professional event-company web application (sticky nav, hero with honest stats, 3 event cards, 3-step guide, sample preview, 4-column footer) while maintaining 100% WCAG AA contrast and zero hardcoded text |
+| D-20 | 2026-10-31 | Deployed to Streamlit Community Cloud with verified live URL | Verified live public deployment at https://eventgenie-wmmqmbsrg82sl7nacr8az3.streamlit.app/ running Python 3.11 with automated secrets injection |
 
 ---
 
@@ -544,6 +545,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | S-09 | Completed submission package: updated README with live demo section, comprehensive folder tree, known limitations; created docs/DEMO_SCRIPT.md 3-minute video walkthrough; verified DEPLOY.md; confirmed repo size < 1 MB | docs/DEMO_SCRIPT.md, README.md, EVENTGENIE_MASTER_PROMPT.md | All submission package artifacts complete and verified |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | S-10 | Final verification: verified clean dependencies, 161/161 tests passing with 89% coverage, 0 ruff errors, zero secrets in git history, 870 KiB repo size, live generation in English & Kannada, updated Section 14 resume bullets | scripts/run_v0_sample.py, EVENTGENIE_MASTER_PROMPT.md | All S-01 through S-10 tasks COMPLETE and submission-ready |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | U-01 to U-08 | Redesigned Streamlit UI into professional event-company landing page (eventplus-inspired): app/ui/styles.css (design tokens, Playfair Display + Inter, Indic fallbacks), app/ui/theme.py, app/ui/components.py (nav_bar, hero, event_cards, how_it_works, sample_preview, cta_banner, footer), refactored main.py, updated all 6 i18n JSONs with zero empty placeholders, added docs/screens/landing_page_layout.svg, added tests/test_landing_page.py (166 tests passing, 90% coverage) | app/ui/styles.css, app/ui/theme.py, app/ui/components.py, app/main.py, app/i18n/*.json, tests/test_landing_page.py, docs/screens/landing_page_layout.svg, README.md, EVENTGENIE_MASTER_PROMPT.md | 166/166 tests pass, 90% coverage, 0 ruff errors, 894 KiB repo |
+| 2026-10-31 | Antigravity Gemini 3.8 Flash | T-09 | Live deployment verified on Streamlit Community Cloud at https://eventgenie-wmmqmbsrg82sl7nacr8az3.streamlit.app/; updated README, DEMO_SCRIPT.md, and master tracking file with verified live URL | EVENTGENIE_MASTER_PROMPT.md, README.md, docs/DEMO_SCRIPT.md | Live app operational and accessible to evaluators |
 
 ---
 
