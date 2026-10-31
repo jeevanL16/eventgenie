@@ -28,13 +28,13 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-31 |
-| Last completed task | B-04 (Hide Streamlit default header and add body top padding for sticky nav) |
-| Currently in progress | B-05 (Hero polish and stat labels across all 6 languages) |
-| **NEXT TASK** | **B-05** (Hero polish: single number + label, reduced vertical padding) |
+| Last completed task | B-05 (Hero polish: single number + label, reduced vertical padding across 6 languages) |
+| Currently in progress | B-06 (Mobile and multilingual verification at 390px) |
+| **NEXT TASK** | **B-06** (Mobile and multilingual verification at 390px, full suite pass, push) |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | https://eventgenie-wmmqmbsrg82sl7nacr8az3.streamlit.app/ |
 | Blockers | none (remote pushed to https://github.com/jeevanL16/eventgenie.git) |
-| Half-done work / notes for next agent | B-04 complete. Proceed to B-05 (Hero polish and stat labels). |
+| Half-done work / notes for next agent | B-05 complete. Proceed to B-06 (Mobile and multilingual verification). |
 
 ---
 
@@ -402,7 +402,7 @@ eventgenie/
   *Acceptance:* links and buttons render in plum/gold without default Streamlit blue/underline overrides.
 - [x] **B-04** **STREAMLIT HEADER & STICKY NAV OVERLAP**: Hide Streamlit default header, toolbar, decoration, and footer via CSS; set sticky nav `top: 0` with top z-index; add top body padding to prevent content clipping.
   *Acceptance:* sticky nav is unobscured by Streamlit chrome; top content is fully visible below nav.
-- [ ] **B-05** **HERO POLISH & STAT LABELS**: Stat badges display single number + clean label ("6" + "Languages", "3" + "Event Types", "4" + "Outputs per Plan") without repeating numbers; update all 6 i18n JSON files; reduce hero vertical padding; clean gradient background.
+- [x] **B-05** **HERO POLISH & STAT LABELS**: Stat badges display single number + clean label ("6" + "Languages", "3" + "Event Types", "4" + "Outputs per Plan") without repeating numbers; update all 6 i18n JSON files; reduce hero vertical padding; clean gradient background.
   *Acceptance:* hero fits gracefully in viewport; stat labels display cleanly across all 6 languages.
 - [ ] **B-06** **MOBILE & MULTILINGUAL VERIFICATION**: Responsive layout at 390px width; verified in Hindi and Kannada with zero tofu boxes; full pytest suite passes; pushed to GitHub.
   *Acceptance:* all tests green, ruff clean, remote synced.
@@ -526,6 +526,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | D-22 | 2026-10-31 | Visually hide skip link off-screen until focused | Ensures skip link remains off-screen (left: -9999px) during visual browsing but immediately brings into view upon tab navigation with prominent outline |
 | D-23 | 2026-10-31 | Scoped link & button styling with WCAG AA verified contrast | Prevents Streamlit's default markdown anchor rules from overriding custom plum text and gold buttons; enforces dark ink text on gold (5.7:1) and plum on ivory (10.2:1) |
 | D-24 | 2026-10-31 | Clean removal of Streamlit default chrome and sticky nav z-index | Completely hides Streamlit header/toolbar/decorations/footer and adds 70px block container top padding to eliminate visual overlap with the sticky 60px nav bar |
+| D-25 | 2026-10-31 | Hero stat badges deduplication and padding compaction | Decoupled leading digits from label strings across all 6 language JSONs to display clean single numbers ('6' + 'Languages', not '6' + '6 Languages') and reduced hero vertical padding |
 
 ---
 
@@ -569,6 +570,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | B-02 | Positioned .skip-link off-screen (left: -9999px) by default and brought into view on :focus with high-contrast outline; added regression test | app/ui/styles.css, tests/test_landing_page.py, EVENTGENIE_MASTER_PROMPT.md | Skip link accessible, test_landing_page.py passes |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | B-03 | Added scoped CSS overrides for .stMarkdown links/buttons with WCAG AA verified contrast (14.1:1 plum/ivory, 8.5:1 ink/gold), no underlines, visible focus outlines; added 2 tests | app/ui/styles.css, tests/test_landing_page.py, EVENTGENIE_MASTER_PROMPT.md | 8/8 landing page tests pass, WCAG AA contrast verified |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | B-04 | Hid Streamlit default chrome (header, toolbar, footer) cleanly via CSS; set .eg-nav height 60px, z-index 99999; added 70px body padding; added test | app/ui/styles.css, tests/test_landing_page.py, EVENTGENIE_MASTER_PROMPT.md | 9/9 landing page tests pass, sticky nav unobscured |
+| 2026-10-31 | Antigravity Gemini 3.8 Flash | B-05 | Polished hero stat labels across all 6 language JSONs (single number + label); reduced hero vertical padding to compact layout; added unit and AppTest | app/i18n/*.json, app/ui/styles.css, tests/test_landing_page.py, EVENTGENIE_MASTER_PROMPT.md | 10/10 landing page tests pass, all 6 languages verified |
 
 ---
 

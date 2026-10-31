@@ -272,10 +272,12 @@ div[data-testid="stMarkdownContainer"] .eg-footer a:focus {
 /* --- Hero Section --- */
 .eg-hero {
     background: var(--bg-hero);
-    padding: calc(var(--sp-8) + 40px) var(--sp-6) var(--sp-8);
+    padding: var(--sp-6) var(--sp-6) var(--sp-6);
     text-align: center;
     position: relative;
     overflow: hidden;
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--sp-5);
 }
 .eg-hero::before {
     content: '';

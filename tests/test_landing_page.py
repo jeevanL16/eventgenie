@@ -158,3 +158,16 @@ class TestLandingPageComponents:
         assert t("stat_languages", "en") in hero_html
         assert t("stat_events", "en") in hero_html
         assert t("stat_outputs", "en") in hero_html
+        assert "6 Languages" not in hero_html
+
+    def test_stat_badges_single_number_and_clean_labels(self):
+        """Task B-05: Stat badges display single number + label across all 6 languages."""
+        for lang in SUPPORTED_LANGUAGES:
+            stat_lang = t("stat_languages", lang)
+            stat_ev = t("stat_events", lang)
+            stat_out = t("stat_outputs", lang)
+            assert not stat_lang.startswith("6"), (
+                f"{lang} stat_languages has leading 6: {stat_lang}"
+            )
+            assert not stat_ev.startswith("3"), f"{lang} stat_events has leading 3: {stat_ev}"
+            assert not stat_out.startswith("4"), f"{lang} stat_outputs has leading 4: {stat_out}"
