@@ -223,3 +223,14 @@ class TestLandingPageComponents:
         assert "background-color: var(--accent-gold-bg) !important;" in css_text
         assert "background-color: var(--bg-white) !important;" in css_text
         assert "border: 1.5px solid #CDBFA8 !important;" in css_text
+
+    def test_alert_notice_banner_styling_and_contrast(self):
+        """Task C-04: Alert containers use dark ink text on light tinted backgrounds."""
+        css_path = Path(__file__).resolve().parent.parent / "app" / "ui" / "styles.css"
+        css_text = css_path.read_text(encoding="utf-8")
+        assert 'div[data-testid="stAlert"]' in css_text
+        assert "color: var(--text-heading) !important;" in css_text
+        assert "background-color: var(--info-bg) !important;" in css_text
+        assert "background-color: var(--warning-bg) !important;" in css_text
+        assert "background-color: var(--success-bg) !important;" in css_text
+        assert "background-color: var(--error-bg) !important;" in css_text

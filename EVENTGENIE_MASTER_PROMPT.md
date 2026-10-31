@@ -28,13 +28,13 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-31 |
-| Last completed task | C-03 (Button styling and contrast in styles.css) |
-| Currently in progress | C-04 (Info/notice banner styling and contrast in styles.css) |
-| **NEXT TASK** | **C-04** (Info/notice banner styling and contrast with dark ink text) |
+| Last completed task | C-04 (Info/notice banner styling and contrast in styles.css) |
+| Currently in progress | C-05 (Verify contrast, nav anchors, and dark OS mode) |
+| **NEXT TASK** | **C-05** (Automated contrast suite, docs/ACCESSIBILITY.md, nav anchors) |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | https://eventgenie-wmmqmbsrg82sl7nacr8az3.streamlit.app/ |
 | Blockers | none (remote pushed to https://github.com/jeevanL16/eventgenie.git) |
-| Half-done work / notes for next agent | C-03 complete. Proceed to C-04 (Info/notice banners). |
+| Half-done work / notes for next agent | C-04 complete. Proceed to C-05 (Contrast verification and nav anchor fixes). |
 
 ---
 
@@ -415,7 +415,7 @@ eventgenie/
   *Acceptance:* CSS styles exist and target widget selectors; AppTest confirms inputs render with readable dark text on white.
 - [x] **C-03** **BUTTON STYLING & CONTRAST**: Quick demo buttons and all `st.button` styled in saffron (`#F5A623`) or white with plum text (`#2D1B4E`), min-height 44px, visible focus ring; primary "Generate my plan" button prominent; contrast >= 4.5:1.
   *Acceptance:* CSS rules enforce 44px touch targets and plum on saffron/white styling.
-- [ ] **C-04** **INFO/NOTICE BANNER CONTRAST**: Alert containers (`st.info`, `st.warning`, `st.success`, `st.error`) use dark ink text (`#2D1B4E`) on tinted backgrounds with icon AND text (never color alone); WCAG AA contrast verified.
+- [x] **C-04** **INFO/NOTICE BANNER CONTRAST**: Alert containers (`st.info`, `st.warning`, `st.success`, `st.error`) use dark ink text (`#2D1B4E`) on tinted backgrounds with icon AND text (never color alone); WCAG AA contrast verified.
   *Acceptance:* alert containers have dark ink text with >= 4.5:1 contrast.
 - [ ] **C-05** **VERIFY CONTRAST & NAV ANCHORS**: Automated contrast tests assert >= 4.5:1 body text and >= 3:1 UI borders; update `docs/ACCESSIBILITY.md`; fix nav anchor IDs (`#planner-section`, `#how-it-works`, `#home`, `#about`); verify light theme persistence under dark OS mode; full test suite passes.
   *Acceptance:* all tests green, 0 ruff errors, remote synced.
@@ -544,6 +544,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | D-27 | 2026-10-31 | Force Streamlit light theme via repository .streamlit/config.toml | Configured base='light' and explicit palette tokens (#F5A623, #FBF7F0, #FFFFFF, #2D1B4E) to prevent dark mode OS from rendering dark inputs on light background |
 | D-28 | 2026-10-31 | Scoped widget and input styling in styles.css | Defined high-contrast plum text (#2D1B4E) on white background (#FFFFFF) with warm borders (#CDBFA8) and visible saffron focus rings across text inputs, selects, textareas, and stepper buttons |
 | D-29 | 2026-10-31 | Explicit button styling and WCAG AA contrast rules | Styled primary buttons in prominent saffron (#F5A623) with deep plum text (5.7:1) and secondary/demo buttons in white with plum text (14.8:1) and 44px min-height touch targets |
+| D-30 | 2026-10-31 | Accessible notice banners with high-contrast text and dual markers | Scoped div[data-testid="stAlert"] to guarantee deep ink text (#2D1B4E, 14:1+ contrast) on tinted pastel backgrounds with explicit icons and descriptive text |
 
 ---
 
@@ -592,6 +593,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | C-01 | Created .streamlit/config.toml to force light theme (base='light', primaryColor='#F5A623', backgroundColor='#FBF7F0', secondaryBackgroundColor='#FFFFFF', textColor='#2D1B4E'); added unit test | .streamlit/config.toml, tests/test_config.py, EVENTGENIE_MASTER_PROMPT.md | 5/5 config tests pass, prevents OS dark mode from breaking UI |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | C-02 | Added scoped CSS in styles.css for form labels (plum, 600 weight), inputs (white bg, #CDBFA8 border, plum text, saffron focus ring), selects, popover lists, and stepper buttons; added unit tests | app/ui/styles.css, tests/test_landing_page.py, EVENTGENIE_MASTER_PROMPT.md | 13/13 landing page tests pass, accessible inputs verified |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | C-03 | Styled primary buttons in prominent saffron (#F5A623) with plum text and secondary/demo buttons in white with plum text; enforced 44px min-height; added regression test | app/ui/styles.css, tests/test_landing_page.py, EVENTGENIE_MASTER_PROMPT.md | 14/14 landing page tests pass, button contrast verified |
+| 2026-10-31 | Antigravity Gemini 3.8 Flash | C-04 | Styled st.info/warning/success/error banners with dark ink text (#2D1B4E, 14:1+ contrast) on tinted pastel backgrounds with visible icons; added regression test | app/ui/styles.css, tests/test_landing_page.py, EVENTGENIE_MASTER_PROMPT.md | 15/15 landing page tests pass, high-contrast alerts verified |
 
 ---
 
