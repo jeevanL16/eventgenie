@@ -2,6 +2,12 @@
 
 **GenAI-powered planning assistant that helps users organize weddings, birthdays, and community events with budgets, timelines, vendor checklists, and personalized ideas.**
 
+[![CI](https://github.com/jeevanL16/eventgenie/actions/workflows/ci.yml/badge.svg)](https://github.com/jeevanL16/eventgenie/actions)
+![Coverage](https://img.shields.io/badge/Coverage-90%25-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-133%20Passing-success)
+![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+
 > ⚠️ **Hackathon Submission Sprint.** Live public demo engineered on a $0 free-tier stack.
 
 ## Problem Statement Traceability
@@ -125,6 +131,28 @@ cp .env.example .env
 
 # Run the app
 streamlit run app/main.py
+```
+
+## Automated Testing & Quality Assurance
+
+EventGenie maintains an extensive automated test suite with **90% core coverage** across 133 tests:
+
+| Test Module | Scope & Focus | Tests |
+|---|---|---|
+| [`tests/test_problem_statement.py`](file:///d:/eventgenie/tests/test_problem_statement.py) | Hackathon criteria traceability across weddings, birthdays, community events | 4 tests |
+| [`tests/test_schemas.py`](file:///d:/eventgenie/tests/test_schemas.py) | Pydantic v2 domain schemas, constraints, and data integrity checks | 30 tests |
+| [`tests/test_tools_budget.py`](file:///d:/eventgenie/tests/test_tools_budget.py) | Property-based tests (Hypothesis) for exact penny-rounding reconciliation | 200+ runs |
+| [`tests/test_tools_scheduler.py`](file:///d:/eventgenie/tests/test_tools_scheduler.py) | Property-based tests (Hypothesis) for backward date calculation and bounds | 200+ runs |
+| [`tests/test_llm_router.py`](file:///d:/eventgenie/tests/test_llm_router.py) | Multi-provider failover cascade (Groq → Gemini → Fallback), 429 backoff | 14 tests |
+| [`tests/test_pipeline_v0.py`](file:///d:/eventgenie/tests/test_pipeline_v0.py) | End-to-end plan generation, 2-stage repair loop, and fallback templates | 6 tests |
+| [`tests/test_security.py`](file:///d:/eventgenie/tests/test_security.py) | Input sanitization, control char stripping, boundary limits, prompt injection delimiters, XSS escaping | 9 tests |
+| [`tests/test_efficiency.py`](file:///d:/eventgenie/tests/test_efficiency.py) | SQLite response caching, sub-10ms cache retrieval, sliding-window rate limiting, < 10 MB footprint | 7 tests |
+| [`tests/test_edge_cases.py`](file:///d:/eventgenie/tests/test_edge_cases.py) | Past dates, negative budgets, huge guest bounds (100k), malformed JSON, total router failure | 5 tests |
+| [`tests/test_main_app.py`](file:///d:/eventgenie/tests/test_main_app.py) | End-to-end Streamlit UI integration (`AppTest`) | 4 tests |
+
+To run the complete test suite with coverage reporting:
+```bash
+python -m pytest --cov=app --cov-report=term-missing tests/
 ```
 
 ## Free-Tier Limits and Provider Failover
