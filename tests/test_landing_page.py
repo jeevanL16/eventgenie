@@ -212,3 +212,14 @@ class TestLandingPageComponents:
         assert 'div[data-baseweb="select"]' in css_text
         assert 'li[role="option"]' in css_text
         assert '[data-testid="stNumberInputStepDown"]' in css_text
+
+    def test_native_button_styling_rules_and_contrast(self):
+        """Task C-03: Quick Demo and all st.button styled with saffron/white, plum text, 44px min-height."""
+        css_path = Path(__file__).resolve().parent.parent / "app" / "ui" / "styles.css"
+        css_text = css_path.read_text(encoding="utf-8")
+        assert 'button[kind="primary"]' in css_text
+        assert 'button[kind="secondary"]' in css_text
+        assert "min-height: 44px !important;" in css_text
+        assert "background-color: var(--accent-gold-bg) !important;" in css_text
+        assert "background-color: var(--bg-white) !important;" in css_text
+        assert "border: 1.5px solid #CDBFA8 !important;" in css_text

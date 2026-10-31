@@ -780,6 +780,98 @@ div[data-testid="stNumberInput"] button:hover {
     color: var(--btn-text) !important;
 }
 
+/* --- Streamlit Native Button Styling & Contrast (Task C-03) --- */
+
+/* Base styling for all Streamlit buttons */
+div.stButton > button,
+div[data-testid="stFormSubmitButton"] > button,
+button[data-testid="baseButton-secondary"],
+button[data-testid="baseButton-primary"] {
+    min-height: 44px !important;
+    font-family: var(--font-body) !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    border-radius: 10px !important;
+    box-sizing: border-box !important;
+    padding: var(--sp-2) var(--sp-5) !important;
+    cursor: pointer !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
+}
+
+/* Primary buttons (e.g. "Generate my plan") — Saffron background with deep plum text */
+button[kind="primary"],
+button[data-testid="baseButton-primary"],
+div[data-testid="stFormSubmitButton"] > button {
+    background-color: var(--accent-gold-bg) !important;
+    color: var(--text-heading) !important;
+    border: 1px solid var(--accent-gold) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+button[kind="primary"]:hover,
+button[data-testid="baseButton-primary"]:hover,
+div[data-testid="stFormSubmitButton"] > button:hover {
+    background-color: var(--accent-gold-hover) !important;
+    color: #1C1235 !important;
+    border-color: #B27B0B !important;
+    transform: translateY(-1px) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+button[kind="primary"]:focus-visible,
+button[data-testid="baseButton-primary"]:focus-visible,
+div[data-testid="stFormSubmitButton"] > button:focus-visible {
+    outline: 3px solid var(--text-heading) !important;
+    outline-offset: 2px !important;
+}
+
+/* Secondary buttons (e.g. Quick Demo buttons, Event card buttons, export buttons) */
+button[kind="secondary"],
+button[data-testid="baseButton-secondary"],
+div.stButton > button:not([kind="primary"]) {
+    background-color: var(--bg-white) !important;
+    color: var(--text-heading) !important;
+    border: 1.5px solid #CDBFA8 !important;
+    box-shadow: 0 1px 2px rgba(45, 27, 78, 0.05) !important;
+}
+
+button[kind="secondary"]:hover,
+button[data-testid="baseButton-secondary"]:hover,
+div.stButton > button:not([kind="primary"]):hover {
+    background-color: #FFF8ED !important;
+    color: var(--text-heading) !important;
+    border-color: var(--accent-gold-bg) !important;
+    transform: translateY(-1px) !important;
+}
+
+button[kind="secondary"]:focus-visible,
+button[data-testid="baseButton-secondary"]:focus-visible,
+div.stButton > button:not([kind="primary"]):focus-visible {
+    outline: 2px solid var(--accent-gold-bg) !important;
+    outline-offset: 2px !important;
+}
+
+/* Ensure text inside button paragraphs/spans also gets plum color */
+button[kind="secondary"] p,
+button[kind="secondary"] span,
+button[data-testid="baseButton-secondary"] p,
+button[data-testid="baseButton-secondary"] span,
+div.stButton > button:not([kind="primary"]) p,
+div.stButton > button:not([kind="primary"]) span {
+    color: var(--text-heading) !important;
+    font-weight: 600 !important;
+}
+
+button[kind="primary"] p,
+button[kind="primary"] span,
+button[data-testid="baseButton-primary"] p,
+button[data-testid="baseButton-primary"] span,
+div[data-testid="stFormSubmitButton"] > button p,
+div[data-testid="stFormSubmitButton"] > button span {
+    color: var(--text-heading) !important;
+    font-weight: 700 !important;
+}
+
 /* Results ribbon / badge */
 .eg-result-badge {
     display: inline-block;
