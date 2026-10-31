@@ -87,7 +87,7 @@ def run_samples() -> int:
     from app.llm import GeminiLLM
 
     bad_llm = GeminiLLM(api_key="bad-dummy-key")
-    fallback_res = generate_plan_v0(sample_inputs[0], llm=bad_llm)
+    fallback_res = generate_plan_v0(sample_inputs[0], llm=bad_llm, use_cache=False)
     print(f"Fallback triggered: {fallback_res.is_fallback}")
     print(f"Notice displayed: {fallback_res.notices[0]}")
     assert fallback_res.is_fallback is True
