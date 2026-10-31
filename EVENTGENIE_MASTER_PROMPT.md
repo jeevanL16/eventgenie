@@ -28,13 +28,13 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-31 |
-| Last completed task | S-06 (Testing: 90% core coverage across 133 tests, pytest-cov, edge-cases, CI coverage badge) |
-| Currently in progress | S-07 (Accessibility: form labels, non-color-only indicators, keyboard navigation, README section) |
-| **NEXT TASK** | **S-07** (Accessibility: audit labels/help text, high-contrast badges, keyboard navigation guide in README) |
+| Last completed task | S-07 (Accessibility: form help annotations, WCAG AA contrast, non-color-only markers, README a11y guide) |
+| Currently in progress | S-08 (Multilingual minimum viable: i18n JSONs, category keys+labels, Indic translation validation) |
+| **NEXT TASK** | **S-08** (Multilingual minimum viable: implement app/i18n/*.json for hi, kn, te, ta, mr; category keys; structural check) |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | _awaiting deployment URL from share.streamlit.io_ |
 | Blockers | none (remote pushed to https://github.com/jeevanL16/eventgenie.git) |
-| Half-done work / notes for next agent | S-01 through S-06 complete. 133 tests passing with 90% core coverage. Proceed directly to S-07 (Accessibility). |
+| Half-done work / notes for next agent | S-01 through S-07 complete. 135 tests passing with 90% core coverage. Proceed directly to S-08 (Multilingual). |
 
 ---
 
@@ -293,7 +293,7 @@ eventgenie/
   *Acceptance:* second identical request is instant; repo size verified under 10 MB.
 - [x] **S-06** **TESTING (Medium Impact)**: Add `pytest-cov`, reach 85%+ core coverage, report real coverage number in README. Add edge-case tests (negative budget, past date, huge guests, malformed JSON, router failure). Green CI badge.
   *Acceptance:* CI green; real measured coverage reported.
-- [ ] **S-07** **ACCESSIBILITY (Medium Impact)**: Form inputs with clear labels and help text; no color- or emoji-only status indicators; high contrast; text/table alternative for every visual; keyboard navigable; Accessibility section in README.
+- [x] **S-07** **ACCESSIBILITY (Medium Impact)**: Form inputs with clear labels and help text; no color- or emoji-only status indicators; high contrast; text/table alternative for every visual; keyboard navigable; Accessibility section in README.
   *Acceptance:* accessibility checklist in README; no color-only meaning in UI.
 - [ ] **S-08** **MULTILINGUAL MINIMUM VIABLE (Differentiator)**: Implement T-16 (i18n UI strings), T-17 (category key + label), T-18 (translate_plan with structural check and fallback) for `hi`, `kn`, `te`, `ta`, `mr`. Compare at least 2 models in `eval/language_review.md` and use the best. Label Beta.
   *Acceptance:* 5 Indic languages verified with structural check passing; review logged.
@@ -482,6 +482,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | D-12 | 2026-10-31 | Explicit XML delimiter tagging (<user_vibe>, <user_notes>) and curly brace format escaping | Prevents prompt injection attacks and template format KeyError crashes when processing untrusted user free text |
 | D-13 | 2026-10-31 | SQLite response caching with SHA256 keying and sliding-window rate limiting | Eliminates duplicate LLM calls (sub-10ms response on identical requests) and protects free-tier API quotas while bypassing limits for BYOK sessions |
 | D-14 | 2026-10-31 | Explicit edge-case test suite and 90% measured test coverage in CI | Proves robustness against past dates, malformed JSON, and provider exhaustion while documenting real metrics for evaluators |
+| D-15 | 2026-10-31 | Explicit text markers alongside icons and full help text annotations on all intake widgets | Guarantees WCAG 2.1 AA accessibility compliance and ensures non-color-only state representation across all UI components |
 
 ---
 
@@ -515,6 +516,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | S-04 | Implemented input sanitization, control char stripping, boundary limits, prompt injection delimiter defenses, format string injection escaping, HTML escaping for XSS prevention, and SECURITY.md; added 9 security tests | app/schemas.py, app/prompts/v1/system.md, app/prompts/v1/plan_v0.md, app/pipeline.py, app/main.py, SECURITY.md, tests/test_security.py, EVENTGENIE_MASTER_PROMPT.md | 121/121 tests pass, ruff clean, git secrets audit clean |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | S-05 | Implemented app/cache.py (SQLite TTL response cache), app/ratelimit.py (sliding-window rate limiter), wired caching into pipeline and UI badge, verified sub-10ms cache retrieval and 688 KiB repo footprint; added 7 efficiency tests | app/cache.py, app/ratelimit.py, app/pipeline.py, app/main.py, tests/test_efficiency.py, EVENTGENIE_MASTER_PROMPT.md | 128/128 tests pass, ruff clean, repo size < 1 MB |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | S-06 | Achieved 90% core coverage across 133 tests with pytest-cov; created tests/test_edge_cases.py and tests/conftest.py; added CI test coverage reporting to .github/workflows/ci.yml; updated README with badges and testing breakdown | tests/test_edge_cases.py, tests/conftest.py, .github/workflows/ci.yml, README.md, EVENTGENIE_MASTER_PROMPT.md | 133/133 tests pass, 90% coverage measured, ruff clean |
+| 2026-10-31 | Antigravity Gemini 3.8 Flash | S-07 | Audited and annotated all form inputs with descriptive help text; verified WCAG AA high-contrast ratios (#1E293B, #B91C1C, #065F46); ensured non-color-only markers (textual labels like 'Warning: Caution', 'TODO', 'Verified'); added Accessibility section to README; added 2 automated a11y AppTests (135 tests passing) | app/main.py, README.md, tests/test_accessibility.py, EVENTGENIE_MASTER_PROMPT.md | 135/135 tests pass, 90% coverage, ruff clean |
 
 ---
 

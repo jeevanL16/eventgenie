@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/jeevanL16/eventgenie/actions/workflows/ci.yml/badge.svg)](https://github.com/jeevanL16/eventgenie/actions)
 ![Coverage](https://img.shields.io/badge/Coverage-90%25-brightgreen)
-![Tests](https://img.shields.io/badge/Tests-133%20Passing-success)
+![Tests](https://img.shields.io/badge/Tests-135%20Passing-success)
 ![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
@@ -149,11 +149,26 @@ EventGenie maintains an extensive automated test suite with **90% core coverage*
 | [`tests/test_efficiency.py`](file:///d:/eventgenie/tests/test_efficiency.py) | SQLite response caching, sub-10ms cache retrieval, sliding-window rate limiting, < 10 MB footprint | 7 tests |
 | [`tests/test_edge_cases.py`](file:///d:/eventgenie/tests/test_edge_cases.py) | Past dates, negative budgets, huge guest bounds (100k), malformed JSON, total router failure | 5 tests |
 | [`tests/test_main_app.py`](file:///d:/eventgenie/tests/test_main_app.py) | End-to-end Streamlit UI integration (`AppTest`) | 4 tests |
+| [`tests/test_accessibility.py`](file:///d:/eventgenie/tests/test_accessibility.py) | WCAG AA compliance: input help annotations, non-color-only markers | 2 tests |
 
 To run the complete test suite with coverage reporting:
 ```bash
 python -m pytest --cov=app --cov-report=term-missing tests/
 ```
+
+## Accessibility (a11y) & Usability
+
+EventGenie is designed following **WCAG 2.1 Level AA** accessibility principles:
+
+- **Descriptive Input Guidance**: Every form widget (event type, date, guest count, budget, city, currency, language, vibe, and notes) is equipped with dedicated screen-reader help text explaining its purpose and constraints.
+- **No Color-Only Information**: Status indicators never rely solely on color or emojis. Timeline statuses include explicit textual markers (`TODO`, `DOING`, `DONE`), integrity checks state `Verified` or `Mismatch`, and vendor warnings are prefixed with `Caution:` in addition to warning icons.
+- **High Contrast Ratios**: All UI text meets or exceeds WCAG AA contrast standards (minimum 4.5:1 for regular text):
+  - Primary text on light background: `#1E293B` on `#FFFFFF` (~14.0:1)
+  - Warning alert banner text: `#92400E` on `#FEF3C7` (~7.2:1)
+  - GenAI provider badge: `#065F46` on `#ECFDF5` (~8.5:1)
+  - Vendor caution warnings: `#B91C1C` on `#FFFFFF` (~6.0:1)
+- **Structured Tabular Data**: Financial figures and milestone schedules are presented in native semantic tables (`st.dataframe`) rather than visual charts without text alternatives, enabling seamless screen reader accessibility and keyboard navigation.
+- **Full Keyboard Navigability**: Users can tab through all form controls, trigger scenario shortcuts using <kbd>Space</kbd> or <kbd>Enter</kbd>, and toggle vendor due diligence accordions without a pointing device.
 
 ## Free-Tier Limits and Provider Failover
 

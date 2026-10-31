@@ -155,17 +155,25 @@ def _render_intake_form(session_llm: Any) -> None:
                 "community": "🎪 Community Event",
             }.get(x, x.title()),
             key="input_event_type",
+            help="Select wedding, birthday party, or community event to configure budget benchmarks and milestone tasks.",
         )
         event_date = st.date_input(
             "Event Date",
             value=date.today() + timedelta(days=90),
             min_value=date.today(),
             key="input_event_date",
+            help="The planned date of the celebration. Milestones are backward-scheduled leading to this day.",
         )
         c_guests, c_budget = st.columns(2)
         with c_guests:
             guests = st.number_input(
-                "Guest Count", min_value=1, max_value=100000, value=100, step=10, key="input_guests"
+                "Guest Count",
+                min_value=1,
+                max_value=100000,
+                value=100,
+                step=10,
+                key="input_guests",
+                help="Total expected attendees for venue sizing, catering, and guest favor allocations.",
             )
         with c_budget:
             total_budget = st.number_input(
@@ -175,6 +183,7 @@ def _render_intake_form(session_llm: Any) -> None:
                 value=250000.0,
                 step=5000.0,
                 key="input_total_budget",
+                help="Estimated total funds in the chosen currency. Budget lines will sum to 100% exactly.",
             )
 
         c_city, c_curr = st.columns(2)
@@ -184,6 +193,7 @@ def _render_intake_form(session_llm: Any) -> None:
                 value="Bengaluru",
                 placeholder="e.g. Bengaluru, Mumbai, Jaipur",
                 key="input_city",
+                help="City or region for vendor market pricing and cultural venue recommendations.",
             )
         with c_curr:
             currency = st.selectbox(
@@ -191,6 +201,7 @@ def _render_intake_form(session_llm: Any) -> None:
                 options=["INR", "USD", "EUR", "GBP", "AED"],
                 index=0,
                 key="input_currency",
+                help="Currency unit used for all budget line items and cost figures.",
             )
 
         lang_options: dict[Lang, str] = {
@@ -207,18 +218,21 @@ def _render_intake_form(session_llm: Any) -> None:
             format_func=lambda k: lang_options[k],
             index=0,
             key="input_lang",
+            help="Language for generated plan details (Indic languages currently labeled Beta).",
         )
         vibe = st.text_input(
             "Desired Vibe / Style",
             value="Warm, elegant, and festive",
             placeholder="e.g. Elegant, high-energy, rustic picnic",
             key="input_vibe",
+            help="Atmospheric aesthetic, style theme, dress code, or mood.",
         )
         notes = st.text_area(
             "Special Notes / Constraints",
             value="Vegetarian catering; focus on interactive guest experiences.",
             placeholder="Dietary requirements, traditions, specific priorities...",
             key="input_notes",
+            help="Dietary preferences, accessibility requirements, religious customs, or priorities.",
         )
 
         submitted = st.form_submit_button(
@@ -401,11 +415,11 @@ def _render_vendors_tab(plan: EventPlan) -> None:
                 for doc in v.documents_to_request:
                     st.markdown(f"- 📄 {doc}")
             with v_col2:
-                st.markdown("**⚠️ Red Flags:**")
+                st.markdown("**⚠️ Warning Signals (Red Flags):**")
                 for rf in v.red_flags:
                     safe_rf = html.escape(rf)
                     st.markdown(
-                        f"- 🚩 <span style='color: #DC2626;'>{safe_rf}</span>",
+                        f"- 🚩 **Caution:** <span style='color: #B91C1C; font-weight: 500;'>{safe_rf}</span>",
                         unsafe_allow_html=True,
                     )
 
