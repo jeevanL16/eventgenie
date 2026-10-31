@@ -111,6 +111,16 @@ class TestLandingPageComponents:
         # Verify white on gold does NOT meet AA (ensures we never use white text on gold)
         assert contrast("#FFFFFF", "#F5A623") < 4.5
 
+    def test_streamlit_chrome_hidden_and_sticky_nav_z_index(self):
+        """Task B-04: Streamlit chrome hidden and sticky nav has top z-index."""
+        css_path = Path(__file__).resolve().parent.parent / "app" / "ui" / "styles.css"
+        css_text = css_path.read_text(encoding="utf-8")
+        assert 'header[data-testid="stHeader"]' in css_text
+        assert '[data-testid="stToolbar"]' in css_text
+        assert "display: none !important;" in css_text
+        assert "padding-top: 70px !important;" in css_text
+        assert "z-index: 99999;" in css_text
+
     def test_event_card_buttons_exist_and_set_selection(self):
         """Clicking an event-type card button sets session state to that event type."""
         at = AppTest.from_file(MAIN_APP_PATH, default_timeout=20)

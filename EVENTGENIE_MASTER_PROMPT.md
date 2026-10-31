@@ -28,13 +28,13 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-31 |
-| Last completed task | B-03 (Scoped link and button styling with WCAG AA contrast) |
-| Currently in progress | B-04 (Hide Streamlit header and body top padding) |
-| **NEXT TASK** | **B-04** (Hide Streamlit default header and add body top padding for sticky nav) |
+| Last completed task | B-04 (Hide Streamlit default header and add body top padding for sticky nav) |
+| Currently in progress | B-05 (Hero polish and stat labels across all 6 languages) |
+| **NEXT TASK** | **B-05** (Hero polish: single number + label, reduced vertical padding) |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | https://eventgenie-wmmqmbsrg82sl7nacr8az3.streamlit.app/ |
 | Blockers | none (remote pushed to https://github.com/jeevanL16/eventgenie.git) |
-| Half-done work / notes for next agent | B-03 complete. Proceed to B-04 (Streamlit header hide and body top padding). |
+| Half-done work / notes for next agent | B-04 complete. Proceed to B-05 (Hero polish and stat labels). |
 
 ---
 
@@ -400,7 +400,7 @@ eventgenie/
   *Acceptance:* skip-link is off-screen by default and accessible upon tab focus.
 - [x] **B-03** **LINK AND BUTTON STYLING**: Scoped CSS overrides for `.stMarkdown a.eg-btn`, `.stMarkdown .eg-nav a`, `.stMarkdown .eg-brand` with explicit color, `text-decoration: none !important`, and visible focus rings; verify WCAG AA contrast.
   *Acceptance:* links and buttons render in plum/gold without default Streamlit blue/underline overrides.
-- [ ] **B-04** **STREAMLIT HEADER & STICKY NAV OVERLAP**: Hide Streamlit default header, toolbar, decoration, and footer via CSS; set sticky nav `top: 0` with top z-index; add top body padding to prevent content clipping.
+- [x] **B-04** **STREAMLIT HEADER & STICKY NAV OVERLAP**: Hide Streamlit default header, toolbar, decoration, and footer via CSS; set sticky nav `top: 0` with top z-index; add top body padding to prevent content clipping.
   *Acceptance:* sticky nav is unobscured by Streamlit chrome; top content is fully visible below nav.
 - [ ] **B-05** **HERO POLISH & STAT LABELS**: Stat badges display single number + clean label ("6" + "Languages", "3" + "Event Types", "4" + "Outputs per Plan") without repeating numbers; update all 6 i18n JSON files; reduce hero vertical padding; clean gradient background.
   *Acceptance:* hero fits gracefully in viewport; stat labels display cleanly across all 6 languages.
@@ -525,6 +525,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | D-21 | 2026-10-31 | Raw HTML normalization via render_html and clean_html_string | Prevents Streamlit's Markdown parser from misinterpreting indented HTML lines (4+ spaces) and empty lines as raw code blocks |
 | D-22 | 2026-10-31 | Visually hide skip link off-screen until focused | Ensures skip link remains off-screen (left: -9999px) during visual browsing but immediately brings into view upon tab navigation with prominent outline |
 | D-23 | 2026-10-31 | Scoped link & button styling with WCAG AA verified contrast | Prevents Streamlit's default markdown anchor rules from overriding custom plum text and gold buttons; enforces dark ink text on gold (5.7:1) and plum on ivory (10.2:1) |
+| D-24 | 2026-10-31 | Clean removal of Streamlit default chrome and sticky nav z-index | Completely hides Streamlit header/toolbar/decorations/footer and adds 70px block container top padding to eliminate visual overlap with the sticky 60px nav bar |
 
 ---
 
@@ -567,6 +568,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | B-01 | Implemented app/ui/html.py:render_html and clean_html_string; routed all components through render_html; eliminated 4+ space indentation and blank lines; added tests/test_ui_html.py | app/ui/html.py, app/ui/components.py, app/main.py, tests/test_ui_html.py, EVENTGENIE_MASTER_PROMPT.md | 3 new unit & AppTests pass, no code blocks in preview |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | B-02 | Positioned .skip-link off-screen (left: -9999px) by default and brought into view on :focus with high-contrast outline; added regression test | app/ui/styles.css, tests/test_landing_page.py, EVENTGENIE_MASTER_PROMPT.md | Skip link accessible, test_landing_page.py passes |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | B-03 | Added scoped CSS overrides for .stMarkdown links/buttons with WCAG AA verified contrast (14.1:1 plum/ivory, 8.5:1 ink/gold), no underlines, visible focus outlines; added 2 tests | app/ui/styles.css, tests/test_landing_page.py, EVENTGENIE_MASTER_PROMPT.md | 8/8 landing page tests pass, WCAG AA contrast verified |
+| 2026-10-31 | Antigravity Gemini 3.8 Flash | B-04 | Hid Streamlit default chrome (header, toolbar, footer) cleanly via CSS; set .eg-nav height 60px, z-index 99999; added 70px body padding; added test | app/ui/styles.css, tests/test_landing_page.py, EVENTGENIE_MASTER_PROMPT.md | 9/9 landing page tests pass, sticky nav unobscured |
 
 ---
 

@@ -68,10 +68,24 @@
     color: var(--text-body);
 }
 
-/* Hide Streamlit default footer and menu hamburger */
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-header[data-testid="stHeader"] {background: transparent !important;}
+/* Hide Streamlit default chrome cleanly */
+header[data-testid="stHeader"],
+[data-testid="stToolbar"],
+[data-testid="stDecoration"],
+#MainMenu,
+footer {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Add top padding to body block container so content is not behind fixed nav */
+.main .block-container,
+[data-testid="stMainBlockContainer"] {
+    padding-top: 70px !important;
+}
 
 /* --- Scoped link and button styling to defeat Streamlit default overrides --- */
 .stMarkdown a,
@@ -194,7 +208,9 @@ div[data-testid="stMarkdownContainer"] .eg-footer a:focus {
     top: 0;
     left: 0;
     right: 0;
-    z-index: 9999;
+    height: 60px;
+    box-sizing: border-box;
+    z-index: 99999;
     display: flex;
     align-items: center;
     justify-content: space-between;
