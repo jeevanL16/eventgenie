@@ -653,6 +653,133 @@ div[data-testid="stMarkdownContainer"] .eg-footer a:focus {
     margin-bottom: var(--sp-5);
 }
 
+/* --- Form Widgets & Input Controls (Task C-02) --- */
+
+/* Form labels across all Streamlit inputs */
+.stWidgetLabel,
+div[data-testid="stWidgetLabel"],
+label[data-testid="stWidgetLabel"],
+div[data-testid="stWidgetLabel"] label,
+div[data-testid="stWidgetLabel"] label p,
+.stWidgetLabel p,
+.stWidgetLabel span {
+    color: var(--text-heading) !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    font-family: var(--font-body) !important;
+}
+
+/* Tooltip help icon */
+[data-testid="stTooltipIcon"],
+[data-testid="stTooltipHoverTarget"] {
+    color: var(--text-secondary) !important;
+}
+
+/* Text inputs, number inputs, textareas */
+div[data-baseweb="input"],
+div[data-baseweb="base-input"],
+div[data-testid="stTextInput"] input,
+div[data-testid="stNumberInput"] input,
+div[data-testid="stDateInput"] input,
+div[data-testid="stTextArea"] textarea {
+    background-color: var(--bg-white) !important;
+    color: var(--text-heading) !important;
+    border: 1px solid #CDBFA8 !important;
+    border-radius: 10px !important;
+    font-family: var(--font-body) !important;
+    font-size: 0.95rem !important;
+}
+
+/* BaseWeb container inner border styling */
+div[data-baseweb="input"] > div,
+div[data-baseweb="base-input"] > input {
+    background-color: transparent !important;
+    color: var(--text-heading) !important;
+    border: none !important;
+}
+
+/* Visible focus ring on inputs */
+div[data-baseweb="input"]:focus-within,
+div[data-baseweb="base-input"]:focus-within,
+div[data-testid="stTextInput"] input:focus-visible,
+div[data-testid="stNumberInput"] input:focus-visible,
+div[data-testid="stDateInput"] input:focus-visible,
+div[data-testid="stTextArea"] textarea:focus-visible {
+    border-color: var(--accent-gold-bg) !important;
+    box-shadow: 0 0 0 2px rgba(245, 166, 35, 0.35) !important;
+    outline: none !important;
+}
+
+/* Placeholder text color */
+input::placeholder,
+textarea::placeholder,
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+    color: #6B5B7B !important;
+    opacity: 1 !important;
+}
+
+/* Select boxes (BaseWeb select) */
+div[data-baseweb="select"] > div {
+    background-color: var(--bg-white) !important;
+    color: var(--text-heading) !important;
+    border: 1px solid #CDBFA8 !important;
+    border-radius: 10px !important;
+}
+
+div[data-baseweb="select"] span,
+div[data-baseweb="select"] div {
+    color: var(--text-heading) !important;
+    font-family: var(--font-body) !important;
+}
+
+div[data-baseweb="select"]:focus-within > div {
+    border-color: var(--accent-gold-bg) !important;
+    box-shadow: 0 0 0 2px rgba(245, 166, 35, 0.35) !important;
+}
+
+/* Dropdown popover menus and option lists */
+div[data-baseweb="popover"],
+div[data-baseweb="popover"] > div,
+ul[role="listbox"] {
+    background-color: var(--bg-white) !important;
+    color: var(--text-heading) !important;
+    border: 1px solid #CDBFA8 !important;
+    border-radius: 10px !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+li[role="option"] {
+    background-color: var(--bg-white) !important;
+    color: var(--text-heading) !important;
+    font-family: var(--font-body) !important;
+    padding: var(--sp-2) var(--sp-3) !important;
+    transition: background 0.15s ease;
+}
+
+li[role="option"]:hover,
+li[role="option"][aria-selected="true"] {
+    background-color: #FFF8ED !important;
+    color: var(--text-heading) !important;
+}
+
+/* Number input +/- stepper buttons */
+[data-testid="stNumberInputStepDown"],
+[data-testid="stNumberInputStepUp"],
+div[data-testid="stNumberInput"] button {
+    background-color: #FBF7F0 !important;
+    color: var(--text-heading) !important;
+    border: 1px solid #CDBFA8 !important;
+    border-radius: 6px !important;
+}
+
+[data-testid="stNumberInputStepDown"]:hover,
+[data-testid="stNumberInputStepUp"]:hover,
+div[data-testid="stNumberInput"] button:hover {
+    background-color: var(--accent-gold-bg) !important;
+    color: var(--btn-text) !important;
+}
+
 /* Results ribbon / badge */
 .eg-result-badge {
     display: inline-block;

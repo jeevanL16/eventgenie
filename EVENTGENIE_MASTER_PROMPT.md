@@ -28,13 +28,13 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-31 |
-| Last completed task | C-01 (Force light theme via .streamlit/config.toml) |
-| Currently in progress | C-02 (Widget and label styling in styles.css) |
-| **NEXT TASK** | **C-02** (Scoped widget and label styling in styles.css) |
+| Last completed task | C-02 (Scoped widget and label styling in styles.css) |
+| Currently in progress | C-03 (Button styling and contrast in styles.css) |
+| **NEXT TASK** | **C-03** (Quick demo buttons and st.button styling with WCAG AA contrast) |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | https://eventgenie-wmmqmbsrg82sl7nacr8az3.streamlit.app/ |
 | Blockers | none (remote pushed to https://github.com/jeevanL16/eventgenie.git) |
-| Half-done work / notes for next agent | C-01 complete. Proceed to C-02 (Widget and label styling). |
+| Half-done work / notes for next agent | C-02 complete. Proceed to C-03 (Button styling and contrast). |
 
 ---
 
@@ -411,7 +411,7 @@ eventgenie/
 
 - [x] **C-01** **FORCE LIGHT THEME**: Create `.streamlit/config.toml` configuring base="light", primaryColor="#F5A623", backgroundColor="#FBF7F0", secondaryBackgroundColor="#FFFFFF", textColor="#2D1B4E", font="sans serif"; ensure tracked in git.
   *Acceptance:* `.streamlit/config.toml` exists, tracked in git, specifies light theme tokens.
-- [ ] **C-02** **WIDGET AND LABEL STYLING**: Scoped CSS in `styles.css` for `.stWidgetLabel`, `label p`, `input`, `select`, `date_input`, `number_input` with white background, `#CDBFA8` border, `#2D1B4E` text, 10px radius, visible focus ring; visible dropdown menus, popovers, and number stepper buttons.
+- [x] **C-02** **WIDGET AND LABEL STYLING**: Scoped CSS in `styles.css` for `.stWidgetLabel`, `label p`, `input`, `select`, `date_input`, `number_input` with white background, `#CDBFA8` border, `#2D1B4E` text, 10px radius, visible focus ring; visible dropdown menus, popovers, and number stepper buttons.
   *Acceptance:* CSS styles exist and target widget selectors; AppTest confirms inputs render with readable dark text on white.
 - [ ] **C-03** **BUTTON STYLING & CONTRAST**: Quick demo buttons and all `st.button` styled in saffron (`#F5A623`) or white with plum text (`#2D1B4E`), min-height 44px, visible focus ring; primary "Generate my plan" button prominent; contrast >= 4.5:1.
   *Acceptance:* CSS rules enforce 44px touch targets and plum on saffron/white styling.
@@ -542,6 +542,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | D-25 | 2026-10-31 | Hero stat badges deduplication and padding compaction | Decoupled leading digits from label strings across all 6 language JSONs to display clean single numbers ('6' + 'Languages', not '6' + '6 Languages') and reduced hero vertical padding |
 | D-26 | 2026-10-31 | Mobile 390px responsive rules and Indic font fallback stack | Added <=480px touch-target rules (min-height: 44px) and single-column flex-stacking; confirmed Noto Sans Indic fallbacks eliminate tofu boxes in hi, kn, te, ta, mr |
 | D-27 | 2026-10-31 | Force Streamlit light theme via repository .streamlit/config.toml | Configured base='light' and explicit palette tokens (#F5A623, #FBF7F0, #FFFFFF, #2D1B4E) to prevent dark mode OS from rendering dark inputs on light background |
+| D-28 | 2026-10-31 | Scoped widget and input styling in styles.css | Defined high-contrast plum text (#2D1B4E) on white background (#FFFFFF) with warm borders (#CDBFA8) and visible saffron focus rings across text inputs, selects, textareas, and stepper buttons |
 
 ---
 
@@ -588,6 +589,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | B-05 | Polished hero stat labels across all 6 language JSONs (single number + label); reduced hero vertical padding to compact layout; added unit and AppTest | app/i18n/*.json, app/ui/styles.css, tests/test_landing_page.py, EVENTGENIE_MASTER_PROMPT.md | 10/10 landing page tests pass, all 6 languages verified |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | B-06 | Added mobile 390px / <=480px responsive rules, min-height 44px touch targets; verified Indic font stack rendering with no tofu characters; full 176 test suite passing at 90% coverage; pushed to GitHub | app/ui/styles.css, tests/test_landing_page.py, EVENTGENIE_MASTER_PROMPT.md | 176/176 tests pass, 90% coverage, 0 ruff errors, synced to main |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | C-01 | Created .streamlit/config.toml to force light theme (base='light', primaryColor='#F5A623', backgroundColor='#FBF7F0', secondaryBackgroundColor='#FFFFFF', textColor='#2D1B4E'); added unit test | .streamlit/config.toml, tests/test_config.py, EVENTGENIE_MASTER_PROMPT.md | 5/5 config tests pass, prevents OS dark mode from breaking UI |
+| 2026-10-31 | Antigravity Gemini 3.8 Flash | C-02 | Added scoped CSS in styles.css for form labels (plum, 600 weight), inputs (white bg, #CDBFA8 border, plum text, saffron focus ring), selects, popover lists, and stepper buttons; added unit tests | app/ui/styles.css, tests/test_landing_page.py, EVENTGENIE_MASTER_PROMPT.md | 13/13 landing page tests pass, accessible inputs verified |
 
 ---
 

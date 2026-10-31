@@ -198,3 +198,17 @@ class TestLandingPageComponents:
             # Ensure no replacement character U+FFFD (tofu marker)
             assert "\ufffd" not in headline
             assert "\ufffd" not in cta
+
+    def test_form_widget_and_label_styling_rules(self):
+        """Task C-02: Scoped CSS for form labels, inputs, selects, dropdowns, and stepper buttons."""
+        css_path = Path(__file__).resolve().parent.parent / "app" / "ui" / "styles.css"
+        css_text = css_path.read_text(encoding="utf-8")
+        assert ".stWidgetLabel" in css_text
+        assert "color: var(--text-heading) !important;" in css_text
+        assert "font-weight: 600 !important;" in css_text
+        assert 'div[data-baseweb="input"]' in css_text
+        assert "border: 1px solid #CDBFA8 !important;" in css_text
+        assert "border-radius: 10px !important;" in css_text
+        assert 'div[data-baseweb="select"]' in css_text
+        assert 'li[role="option"]' in css_text
+        assert '[data-testid="stNumberInputStepDown"]' in css_text
