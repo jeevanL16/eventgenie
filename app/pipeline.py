@@ -191,18 +191,24 @@ def sanitize_error_message(err: Exception | str | None) -> str:
 
 
 def _prepare_prompts(inputs: PlanInputs) -> tuple[str, str]:
-    """Load and format the system and initial user prompts for plan generation."""
+    """Load and format the system and initial user prompts with injection-safe escaping."""
     system_prompt = load_prompt("system.md")
     user_prompt_template = load_prompt("plan_v0.md")
+
+    # Escape curly braces in untrusted text fields to prevent format string injection or KeyErrors
+    safe_city = (inputs.city or "General Metro").replace("{", "{{").replace("}", "}}")
+    safe_vibe = (inputs.vibe or "Festive and welcoming").replace("{", "{{").replace("}", "}}")
+    safe_notes = (inputs.notes or "None provided").replace("{", "{{").replace("}", "}}")
+
     user_prompt = user_prompt_template.format(
         event_type=inputs.event_type,
         event_date=inputs.event_date.isoformat(),
         guests=inputs.guests,
         total_budget=inputs.total_budget,
         currency=inputs.currency,
-        city=inputs.city or "General Metro",
-        vibe=inputs.vibe or "Festive and welcoming",
-        notes=inputs.notes or "None provided",
+        city=safe_city,
+        vibe=safe_vibe,
+        notes=safe_notes,
     )
     return system_prompt, user_prompt
 

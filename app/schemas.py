@@ -3,13 +3,25 @@
 Implements the schema from EVENTGENIE_MASTER_PROMPT.md Section 6.
 """
 
+import re
 from datetime import date
-from typing import Literal
+from typing import Any, Literal
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 Lang = Literal["en", "hi", "kn", "te", "ta", "mr"]
 EventType = Literal["wedding", "birthday", "community"]
+
+CONTROL_CHAR_REGEX = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+
+
+def sanitize_text(v: Any, max_len: int) -> str:
+    """Strip control characters and truncate to max length for security."""
+    if v is None:
+        return ""
+    text = str(v)
+    cleaned = CONTROL_CHAR_REGEX.sub("", text).strip()
+    return cleaned[:max_len]
 
 
 class PlanInputs(BaseModel):
@@ -17,13 +29,34 @@ class PlanInputs(BaseModel):
 
     event_type: EventType
     event_date: date
-    guests: int = Field(gt=0)
-    total_budget: float = Field(gt=0)
-    currency: str = "INR"
-    city: str = ""
+    guests: int = Field(gt=0, le=100000, description="Expected guest count (1 to 100,000)")
+    total_budget: float = Field(ge=100.0, le=100000000.0, description="Total budget amount")
+    currency: str = Field(default="INR", max_length=10)
+    city: str = Field(default="", max_length=100)
     lang: Lang = "en"
-    vibe: str = ""
-    notes: str = ""
+    vibe: str = Field(default="", max_length=500)
+    notes: str = Field(default="", max_length=1000)
+
+    @field_validator("city", mode="before")
+    @classmethod
+    def sanitize_city(cls, v: Any) -> str:
+        return sanitize_text(v, 100)
+
+    @field_validator("vibe", mode="before")
+    @classmethod
+    def sanitize_vibe(cls, v: Any) -> str:
+        return sanitize_text(v, 500)
+
+    @field_validator("notes", mode="before")
+    @classmethod
+    def sanitize_notes(cls, v: Any) -> str:
+        return sanitize_text(v, 1000)
+
+    @field_validator("currency", mode="before")
+    @classmethod
+    def sanitize_currency(cls, v: Any) -> str:
+        clean = sanitize_text(v, 10).upper()
+        return clean if clean else "INR"
 
 
 class BudgetLine(BaseModel):

@@ -5,6 +5,7 @@ instant budget breakdown, backward-scheduled timeline, vendor checklist,
 and creative ideas.
 """
 
+import html
 import os  # noqa: E402
 import sys
 from datetime import date, timedelta
@@ -306,20 +307,25 @@ def _render_plan_ribbon(plan: EventPlan, result: GenerationResult) -> None:
         for note in result.notices:
             st.caption(f"ℹ️ {note}")
 
+    safe_provider = html.escape(result.provider.upper() if result.provider else "LLM")
     provider_badge = (
         '<span class="badge-tag" style="background-color: #FEF3C7; color: #92400E;">⚡ Benchmark Fallback</span>'
         if result.is_fallback
-        else f'<span class="badge-tag" style="background-color: #ECFDF5; color: #065F46;">🤖 Served by: {result.provider.upper() if result.provider else "LLM"}</span>'
+        else f'<span class="badge-tag" style="background-color: #ECFDF5; color: #065F46;">🤖 Served by: {safe_provider}</span>'
     )
+    safe_event_type = html.escape(plan.event_type.upper())
+    safe_city = html.escape(plan.city or "General Metro")
+    safe_curr_display = html.escape(format_currency(plan.total_budget, plan.currency))
+
     st.markdown(
         f"""
         <div class="metric-card">
             {provider_badge}
-            <span class="badge-tag">{plan.event_type.upper()}</span>
-            <span class="badge-tag">📍 {plan.city or "General Metro"}</span>
+            <span class="badge-tag">{safe_event_type}</span>
+            <span class="badge-tag">📍 {safe_city}</span>
             <span class="badge-tag">👥 {plan.guests} Guests</span>
             <span class="badge-tag">📅 {plan.event_date.strftime("%B %d, %Y")}</span>
-            <span class="badge-tag">💰 {format_currency(plan.total_budget, plan.currency)}</span>
+            <span class="badge-tag">💰 {safe_curr_display}</span>
         </div>
         """,
         unsafe_allow_html=True,
@@ -391,8 +397,10 @@ def _render_vendors_tab(plan: EventPlan) -> None:
             with v_col2:
                 st.markdown("**⚠️ Red Flags:**")
                 for rf in v.red_flags:
+                    safe_rf = html.escape(rf)
                     st.markdown(
-                        f"- 🚩 <span style='color: #DC2626;'>{rf}</span>", unsafe_allow_html=True
+                        f"- 🚩 <span style='color: #DC2626;'>{safe_rf}</span>",
+                        unsafe_allow_html=True,
                     )
 
 

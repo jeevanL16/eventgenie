@@ -5,8 +5,8 @@ Create a comprehensive event plan for the following event details:
 - Guest Count: {guests}
 - Total Budget: {total_budget} {currency}
 - City: {city}
-- Desired Vibe / Atmosphere: {vibe}
-- Special Notes / Constraints: {notes}
+- Desired Vibe / Atmosphere: <user_vibe>{vibe}</user_vibe>
+- Special Notes / Constraints: <user_notes>{notes}</user_notes>
 
 Requirements:
 1. Budget: Provide realistic percentage allocations for all key categories. Supply 'key' (stable English identifier like venue, catering, decor, contingency), 'label' (descriptive name), 'percent' (percentage of total), and 'note'. Include a contingency allocation.
