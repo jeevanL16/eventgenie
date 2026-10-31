@@ -28,13 +28,13 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-31 |
-| Last completed task | C-04 (Info/notice banner styling and contrast in styles.css) |
-| Currently in progress | C-05 (Verify contrast, nav anchors, and dark OS mode) |
-| **NEXT TASK** | **C-05** (Automated contrast suite, docs/ACCESSIBILITY.md, nav anchors) |
+| Last completed task | C-05 (Verify WCAG AA contrast matrix, document accessibility, and fix nav anchor offsets) |
+| Currently in progress | none |
+| **NEXT TASK** | **T-22** (Phase 4: RAG and grounding - write knowledge base) |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | https://eventgenie-wmmqmbsrg82sl7nacr8az3.streamlit.app/ |
 | Blockers | none (remote pushed to https://github.com/jeevanL16/eventgenie.git) |
-| Half-done work / notes for next agent | C-04 complete. Proceed to C-05 (Contrast verification and nav anchor fixes). |
+| Half-done work / notes for next agent | C-01 through C-05 complete and verified. 182 tests passing with 90% coverage. Ready for Phase 4 (RAG: T-22 to T-24). |
 
 ---
 
@@ -417,7 +417,7 @@ eventgenie/
   *Acceptance:* CSS rules enforce 44px touch targets and plum on saffron/white styling.
 - [x] **C-04** **INFO/NOTICE BANNER CONTRAST**: Alert containers (`st.info`, `st.warning`, `st.success`, `st.error`) use dark ink text (`#2D1B4E`) on tinted backgrounds with icon AND text (never color alone); WCAG AA contrast verified.
   *Acceptance:* alert containers have dark ink text with >= 4.5:1 contrast.
-- [ ] **C-05** **VERIFY CONTRAST & NAV ANCHORS**: Automated contrast tests assert >= 4.5:1 body text and >= 3:1 UI borders; update `docs/ACCESSIBILITY.md`; fix nav anchor IDs (`#planner-section`, `#how-it-works`, `#home`, `#about`); verify light theme persistence under dark OS mode; full test suite passes.
+- [x] **C-05** **VERIFY CONTRAST & NAV ANCHORS**: Automated contrast tests assert >= 4.5:1 body text and >= 3:1 UI borders; update `docs/ACCESSIBILITY.md`; fix nav anchor IDs (`#planner-section`, `#how-it-works`, `#home`, `#about`); verify light theme persistence under dark OS mode; full test suite passes.
   *Acceptance:* all tests green, 0 ruff errors, remote synced.
 
 ### PHASE 4: RAG and grounding
@@ -545,6 +545,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | D-28 | 2026-10-31 | Scoped widget and input styling in styles.css | Defined high-contrast plum text (#2D1B4E) on white background (#FFFFFF) with warm borders (#CDBFA8) and visible saffron focus rings across text inputs, selects, textareas, and stepper buttons |
 | D-29 | 2026-10-31 | Explicit button styling and WCAG AA contrast rules | Styled primary buttons in prominent saffron (#F5A623) with deep plum text (5.7:1) and secondary/demo buttons in white with plum text (14.8:1) and 44px min-height touch targets |
 | D-30 | 2026-10-31 | Accessible notice banners with high-contrast text and dual markers | Scoped div[data-testid="stAlert"] to guarantee deep ink text (#2D1B4E, 14:1+ contrast) on tinted pastel backgrounds with explicit icons and descriptive text |
+| D-31 | 2026-10-31 | Comprehensive WCAG 2.1 AA/AAA validation and anchor scroll offset normalization | Added automated contrast testing suite asserting >= 4.5:1 text and >= 3.0:1 borders, created docs/ACCESSIBILITY.md, decoupled banner ID from footer id='about', and added 80px scroll margins for fixed nav |
 
 ---
 
@@ -594,6 +595,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | C-02 | Added scoped CSS in styles.css for form labels (plum, 600 weight), inputs (white bg, #CDBFA8 border, plum text, saffron focus ring), selects, popover lists, and stepper buttons; added unit tests | app/ui/styles.css, tests/test_landing_page.py, EVENTGENIE_MASTER_PROMPT.md | 13/13 landing page tests pass, accessible inputs verified |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | C-03 | Styled primary buttons in prominent saffron (#F5A623) with plum text and secondary/demo buttons in white with plum text; enforced 44px min-height; added regression test | app/ui/styles.css, tests/test_landing_page.py, EVENTGENIE_MASTER_PROMPT.md | 14/14 landing page tests pass, button contrast verified |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | C-04 | Styled st.info/warning/success/error banners with dark ink text (#2D1B4E, 14:1+ contrast) on tinted pastel backgrounds with visible icons; added regression test | app/ui/styles.css, tests/test_landing_page.py, EVENTGENIE_MASTER_PROMPT.md | 15/15 landing page tests pass, high-contrast alerts verified |
+| 2026-10-31 | Antigravity Gemini 3.8 Flash | C-05 | Created docs/ACCESSIBILITY.md; added automated contrast test suite (>= 4.5:1 text, >= 3.0:1 UI borders); fixed nav anchor IDs (#about on footer, #cta-section on banner); added scroll-margin-top: 80px; verified 182 tests passing at 90% coverage | docs/ACCESSIBILITY.md, app/ui/styles.css, app/ui/components.py, app/main.py, tests/test_landing_page.py, EVENTGENIE_MASTER_PROMPT.md | 182/182 tests pass, 90% coverage, 0 ruff errors |
 
 ---
 

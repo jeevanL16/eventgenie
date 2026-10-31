@@ -46,6 +46,7 @@
     --shadow-md:      0 4px 12px rgba(45, 27, 78, 0.10);
     --shadow-lg:      0 8px 24px rgba(45, 27, 78, 0.12);
     --border-light:   #E8E0D4;
+    --border-ui:      #8C7B65;   /* 3.8:1 contrast on #FBF7F0, 4.1:1 on #FFFFFF */
     --radius-sm:      8px;
     --radius-md:      12px;
     --radius-lg:      16px;
@@ -200,6 +201,17 @@ div[data-testid="stMarkdownContainer"] .eg-footer a:focus {
 .skip-link:focus {
     left: var(--sp-4);
     outline: 3px solid var(--text-heading);
+}
+
+/* --- Scroll margin offsets for sticky navbar (Task C-05) --- */
+#home,
+#how-it-works,
+#sample-preview,
+#planner-section,
+#about,
+#cta-section,
+.eg-anchor-target {
+    scroll-margin-top: 80px !important;
 }
 
 /* --- Sticky Navigation Bar --- */

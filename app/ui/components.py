@@ -238,7 +238,7 @@ def cta_banner(lang: str = "en") -> None:
     btn = html_mod.escape(t("cta_button", lang))
 
     html_code = f"""
-    <div class="eg-cta-banner" id="about">
+    <div class="eg-cta-banner" id="cta-section">
         <h2>{title}</h2>
         <p>{subtitle}</p>
         <a class="eg-btn-primary eg-btn" href="#planner-section" aria-label="{btn}">✨ {btn}</a>
@@ -266,7 +266,7 @@ def footer(lang: str = "en") -> None:
     copyright_text = html_mod.escape(t("footer_copyright", lang))
 
     html_code = f"""
-    <div class="eg-footer">
+    <div class="eg-footer" id="about">
         <div class="eg-footer-grid">
             <div class="eg-footer-col">
                 <h4>{product}</h4>

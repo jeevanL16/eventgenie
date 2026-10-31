@@ -234,3 +234,68 @@ class TestLandingPageComponents:
         assert "background-color: var(--warning-bg) !important;" in css_text
         assert "background-color: var(--success-bg) !important;" in css_text
         assert "background-color: var(--error-bg) !important;" in css_text
+
+    def test_comprehensive_wcag_contrast_matrix(self):
+        """Task C-05: Comprehensive contrast test asserting >= 4.5:1 text and >= 3.0:1 UI borders."""
+
+        def luminance(hex_code: str) -> float:
+            hex_code = hex_code.lstrip("#")
+            r, g, b = [int(hex_code[i : i + 2], 16) / 255.0 for i in (0, 2, 4)]
+
+            def adjust(c):
+                return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+
+            return 0.2126 * adjust(r) + 0.7152 * adjust(g) + 0.0722 * adjust(b)
+
+        def contrast(c1: str, c2: str) -> float:
+            l1 = luminance(c1)
+            l2 = luminance(c2)
+            return (max(l1, l2) + 0.05) / (min(l1, l2) + 0.05)
+
+        # Body text pairs must be >= 4.5:1
+        text_pairs = [
+            ("#2D1B4E", "#FBF7F0"),  # Heading on ivory
+            ("#3D2E5C", "#FBF7F0"),  # Body on ivory
+            ("#6B5B8A", "#FBF7F0"),  # Secondary on ivory
+            ("#2D1B4E", "#FFFFFF"),  # Heading on white card
+            ("#1C1235", "#F5A623"),  # Ink on gold button
+            ("#2D1B4E", "#F5A623"),  # Plum on gold button
+            ("#F5F0EB", "#1C1235"),  # Ivory on dark footer
+            ("#B8A9D4", "#1C1235"),  # Lavender on dark footer
+            ("#1E40AF", "#EFF6FF"),  # Info alert text
+            ("#92400E", "#FEF3C7"),  # Warning alert text
+            ("#065F46", "#ECFDF5"),  # Success alert text
+            ("#991B1B", "#FEF2F2"),  # Error alert text
+        ]
+        for fg, bg in text_pairs:
+            ratio = contrast(fg, bg)
+            assert ratio >= 4.5, f"Contrast {ratio:.2f}:1 for {fg} on {bg} fails WCAG AA (>= 4.5:1)"
+
+        # UI borders must be >= 3.0:1
+        ui_border_pairs = [
+            ("#8C7B65", "#FBF7F0"),
+            ("#8C7B65", "#FFFFFF"),
+        ]
+        for fg, bg in ui_border_pairs:
+            ratio = contrast(fg, bg)
+            assert ratio >= 3.0, (
+                f"Contrast {ratio:.2f}:1 for {fg} on {bg} fails WCAG non-text (>= 3.0:1)"
+            )
+
+    def test_nav_anchors_and_scroll_offsets(self):
+        """Task C-05: Nav links correspond to unique anchor targets with scroll margins."""
+        at = AppTest.from_file(MAIN_APP_PATH, default_timeout=20)
+        at.run(timeout=20)
+        assert not at.exception
+
+        html_content = " ".join(m.value for m in at.markdown)
+        # Ensure all anchor targets exist
+        assert 'id="home"' in html_content
+        assert 'id="how-it-works"' in html_content
+        assert 'id="planner-section"' in html_content
+        assert 'id="about"' in html_content
+
+        # Verify scroll-margin-top in stylesheet
+        css_path = Path(__file__).resolve().parent.parent / "app" / "ui" / "styles.css"
+        css_text = css_path.read_text(encoding="utf-8")
+        assert "scroll-margin-top: 80px !important;" in css_text

@@ -130,7 +130,7 @@ def _render_sidebar() -> Any:
 def _render_planner_form(session_llm: Any, lang: str) -> None:
     """Render the structured intake form inside a styled card."""
     heading_html = (
-        f'<h2 id="planner-section" style="font-family: var(--font-heading); '
+        f'<h2 style="font-family: var(--font-heading); '
         f'color: var(--text-heading);">'
         f"📋 {html.escape(t('planner_title', lang))}</h2>"
     )
@@ -444,6 +444,7 @@ def main() -> None:
     sample_preview(lang)
 
     # --- Planner Section ---
+    render_html('<div id="planner-section" class="eg-anchor-target"></div>')
     st.markdown("---")
     disclaimer_banner(lang)
 
