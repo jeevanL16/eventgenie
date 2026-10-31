@@ -81,9 +81,24 @@ def test_genai_pipeline_end_to_end_personalization():
     mock_llm.generate_json.return_value = PlanProposalV0(
         budget=[
             {"key": "venue", "label": "Heritage Haveli", "percent": 40.0, "note": "Jaipur palace"},
-            {"key": "catering", "label": "Royal Sadhya Feast", "percent": 35.0, "note": "Traditional lunch"},
-            {"key": "decor", "label": "Marigold & Mirror Styling", "percent": 15.0, "note": "Rajasthani theme"},
-            {"key": "contingency", "label": "Emergency Reserve", "percent": 10.0, "note": "Safety buffer"},
+            {
+                "key": "catering",
+                "label": "Royal Sadhya Feast",
+                "percent": 35.0,
+                "note": "Traditional lunch",
+            },
+            {
+                "key": "decor",
+                "label": "Marigold & Mirror Styling",
+                "percent": 15.0,
+                "note": "Rajasthani theme",
+            },
+            {
+                "key": "contingency",
+                "label": "Emergency Reserve",
+                "percent": 10.0,
+                "note": "Safety buffer",
+            },
         ],
         timeline=[
             {

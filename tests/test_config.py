@@ -29,9 +29,10 @@ def test_get_setting_env_takes_precedence_over_secrets():
 def test_get_setting_when_secrets_raises_file_not_found():
     mock_st = MagicMock()
     # Emulate accessing st.secrets when no secrets.toml exists
-    type(mock_st).secrets = property(lambda self: (_ for _ in ()).throw(FileNotFoundError("No secrets file")))
+    type(mock_st).secrets = property(
+        lambda self: (_ for _ in ()).throw(FileNotFoundError("No secrets file"))
+    )
 
     with patch.dict("os.environ", {}, clear=True):
         with patch.dict("sys.modules", {"streamlit": mock_st}):
             assert get_setting("MISSING_KEY", default="fallback_val") == "fallback_val"
-

@@ -19,6 +19,87 @@ This matrix maps every verbatim requirement from the hackathon problem statement
 | **Personalized Ideas** | Creative themes, tailored catering menus, interactive guest activities, decor concepts, and thoughtful favors based on vibe & notes | [`app/schemas.py:IdeaSet`](file:///d:/eventgenie/app/schemas.py), [`app/pipeline.py:generate_plan_v0`](file:///d:/eventgenie/app/pipeline.py) | [`tests/test_problem_statement.py::test_genai_pipeline_end_to_end_personalization`](file:///d:/eventgenie/tests/test_problem_statement.py) |
 | **GenAI-Powered** | Schema-enforced structured generation, multi-provider failover router (Groq, Gemini, Ollama), and 2-stage automated repair loop | [`app/llm/router.py:LLMRouter`](file:///d:/eventgenie/app/llm/router.py), [`app/pipeline.py:generate_plan_v0`](file:///d:/eventgenie/app/pipeline.py) | [`tests/test_llm_router.py::test_router_failover_on_rate_limit_429`](file:///d:/eventgenie/tests/test_llm_router.py) |
 
+## Architecture Overview
+
+EventGenie separates non-deterministic GenAI ideation from deterministic business arithmetic, ensuring 100% mathematical integrity and strict date ordering.
+
+```mermaid
+flowchart TD
+    User([User in Browser]) -->|Inputs: Type, Date, Budget, City, Vibe| UI[Streamlit UI / app/main.py]
+    UI -->|PlanInputs| Pipeline[Generation Pipeline / app/pipeline.py]
+    
+    subgraph GenAI Engine
+        Pipeline -->|Structured Prompt| Router[LLM Router / app/llm/router.py]
+        Router -->|1. Try Primary| Groq[Groq API / Llama 3.3]
+        Router -->|2. Failover on 429/5xx| Gemini[Google Gemini / 2.5 Flash]
+        Router -->|3. Local Offline| Ollama[Ollama / Local LLM]
+        Groq -.->|Raw Proposal| Router
+        Gemini -.->|Raw Proposal| Router
+        Ollama -.->|Raw Proposal| Router
+    end
+
+    subgraph Deterministic Processing & Verification
+        Router -->|Proposed Percentages & Day Offsets| Pipeline
+        Pipeline -->|Raw Percentages| BudgetTool[Budget Tool / app/tools/budget.py]
+        BudgetTool -->|Exact Penny Rounding Reconciled| ValidatedBudget[Verified Budget Lines: 100.0%]
+        
+        Pipeline -->|Day Offsets| SchedulerTool[Scheduler Tool / app/tools/scheduler.py]
+        SchedulerTool -->|Clamped to Today..Event Date| ValidatedTimeline[Chronological Milestones]
+        
+        ValidatedBudget & ValidatedTimeline --> SchemaValidator[Pydantic Schema / app/schemas.py]
+        Router -.->|All Providers Unavailable| Fallback[Benchmark Fallback / app/templates.py]
+        Fallback --> SchemaValidator
+    end
+
+    SchemaValidator -->|EventPlan| UI
+    UI -->|4 Verified Tabs| Tabs[Budget Breakdown · Scheduled Timeline · Vendor Checklist · Creative Ideas]
+```
+
+## Repository Structure
+
+```
+eventgenie/
+├── app/                           # Core application package
+│   ├── main.py                    # Streamlit frontend & interactive dashboard
+│   ├── pipeline.py                # End-to-end plan generation & repair loop
+│   ├── templates.py               # Deterministic benchmark templates & defaults
+│   ├── schemas.py                 # Pydantic v2 domain schemas & integrity validators
+│   ├── config.py                  # Environment & Streamlit secrets configuration
+│   ├── llm/                       # LLM provider abstraction & failover routing
+│   │   ├── base.py                # LLM protocol & metadata dataclasses
+│   │   ├── router.py              # Multi-provider cascade router with failover
+│   │   ├── groq.py                # Groq OpenAI-compatible client
+│   │   ├── gemini.py              # Google GenAI unified SDK client
+│   │   └── ollama.py              # Local Ollama client for dev & offline evals
+│   ├── tools/                     # Deterministic arithmetic & scheduling tools
+│   │   ├── budget.py              # Percentage-to-amount calculation & rounding reconciliation
+│   │   └── scheduler.py           # Offset-to-calendar date scheduling & clamping
+│   └── prompts/v1/                # Versioned LLM prompt templates
+│       ├── system.md              # System prompt with hallucination guardrails
+│       └── plan_v0.md             # Intake-to-plan structured JSON prompt
+├── scripts/                       # CLI verification & smoke test scripts
+│   ├── README.md                  # Guide for running CLI verification scripts
+│   ├── run_v0_sample.py           # End-to-end pipeline smoke test
+│   ├── test_gemini_call.py        # Direct Google Gemini structured test
+│   └── test_groq_call.py          # Direct Groq structured output test
+├── tests/                         # Comprehensive automated test suite (110+ tests)
+│   ├── test_schemas.py            # Pydantic validation & constraint tests
+│   ├── test_tools_budget.py       # Hypothesis property tests for penny-rounding
+│   ├── test_tools_scheduler.py    # Hypothesis property tests for date bounds
+│   ├── test_llm_router.py         # Multi-provider failover & error handling tests
+│   ├── test_pipeline_v0.py        # Pipeline repair loop & fallback tests
+│   ├── test_problem_statement.py  # Traceability tests for all hackathon criteria
+│   └── test_main_app.py           # Streamlit AppTest end-to-end UI tests
+├── .streamlit/                    # Streamlit configuration & secrets templates
+│   ├── config.toml                # UI styling & server configuration
+│   └── secrets.toml.example       # Template for cloud deployment credentials
+├── requirements.txt               # Lightweight runtime dependencies (Streamlit Cloud safe)
+├── requirements-dev.txt           # Testing, property testing, and linting tools
+├── DEPLOY.md                      # 5-minute Streamlit Cloud deployment guide
+├── pyproject.toml                 # Ruff & Pytest tool configuration
+└── EVENTGENIE_MASTER_PROMPT.md    # Master specification, task board, & session logs
+```
+
 ## Supported Languages
 
 English · Hindi · Kannada · Telugu · Tamil · Marathi

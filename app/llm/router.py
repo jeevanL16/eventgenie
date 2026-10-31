@@ -124,11 +124,13 @@ class LLMRouter:
             # Skip provider instantly if API key is missing
             if hasattr(provider, "api_key") and not provider.api_key:
                 logger.info("Skipping provider '%s': API key is missing.", name)
-                self.failover_history.append({
-                    "provider": name,
-                    "error_type": "LLMAuthError",
-                    "error_message": "Skipped: API key not configured",
-                })
+                self.failover_history.append(
+                    {
+                        "provider": name,
+                        "error_type": "LLMAuthError",
+                        "error_message": "Skipped: API key not configured",
+                    }
+                )
                 continue
 
             try:
@@ -163,11 +165,13 @@ class LLMRouter:
                     err_type,
                     err_msg,
                 )
-                self.failover_history.append({
-                    "provider": name,
-                    "error_type": err_type,
-                    "error_message": err_msg,
-                })
+                self.failover_history.append(
+                    {
+                        "provider": name,
+                        "error_type": err_type,
+                        "error_message": err_msg,
+                    }
+                )
 
         # All providers exhausted or skipped
         summary = "; ".join(
@@ -192,11 +196,13 @@ class LLMRouter:
             # Skip provider instantly if API key is missing
             if hasattr(provider, "api_key") and not provider.api_key:
                 logger.info("Skipping provider '%s': API key is missing.", name)
-                self.failover_history.append({
-                    "provider": name,
-                    "error_type": "LLMAuthError",
-                    "error_message": "Skipped: API key not configured",
-                })
+                self.failover_history.append(
+                    {
+                        "provider": name,
+                        "error_type": "LLMAuthError",
+                        "error_message": "Skipped: API key not configured",
+                    }
+                )
                 continue
 
             try:
@@ -230,11 +236,13 @@ class LLMRouter:
                     err_type,
                     err_msg,
                 )
-                self.failover_history.append({
-                    "provider": name,
-                    "error_type": err_type,
-                    "error_message": err_msg,
-                })
+                self.failover_history.append(
+                    {
+                        "provider": name,
+                        "error_type": err_type,
+                        "error_message": err_msg,
+                    }
+                )
 
         # All providers exhausted or skipped
         summary = "; ".join(

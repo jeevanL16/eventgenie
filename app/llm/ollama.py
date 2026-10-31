@@ -84,7 +84,9 @@ class OllamaLLM:
                 raise
             except (httpx.TimeoutException, LLMTimeoutError) as e:
                 if attempt == self.max_retries:
-                    logger.error("Ollama request timed out after %d retries: %s", self.max_retries, e)
+                    logger.error(
+                        "Ollama request timed out after %d retries: %s", self.max_retries, e
+                    )
                     raise LLMTimeoutError(f"Ollama call timed out: {e}") from e
                 sleep_time = delay + random.uniform(0.1, 0.4)
                 logger.warning(

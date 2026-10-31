@@ -120,7 +120,12 @@ class GroqLLM:
             except groq.AuthenticationError as e:
                 # Auth errors are not retryable
                 raise LLMAuthError(f"Groq authentication failed: {e}") from e
-            except (groq.RateLimitError, groq.InternalServerError, groq.APIConnectionError, groq.APITimeoutError) as e:
+            except (
+                groq.RateLimitError,
+                groq.InternalServerError,
+                groq.APIConnectionError,
+                groq.APITimeoutError,
+            ) as e:
                 if attempt == self.max_retries:
                     logger.error("Groq call failed after %d retries: %s", self.max_retries, e)
                     self._classify_error(e)

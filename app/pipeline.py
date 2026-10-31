@@ -28,15 +28,20 @@ from app.schemas import (
     PlanInputs,
     VendorItem,
 )
-from app.tools.budget import ProposedBudgetLine, calculate_budget
-from app.tools.scheduler import ProposedTask, schedule_tasks
+from app.templates import (
+    DEFAULT_BUDGET_SPLITS,
+    DEFAULT_IDEAS,
+    DEFAULT_TIMELINE_TASKS,
+    DEFAULT_VENDORS,
+)
+from app.tools.budget import calculate_budget
+from app.tools.scheduler import schedule_tasks
 
 logger = logging.getLogger(__name__)
 
 PROMPT_VERSION = "v1"
 
 
-# Schema for raw LLM proposal prior to deterministic budget and date calculation
 class BudgetProposalItem(BaseModel):
     """Raw proposed budget item with percentage."""
 
@@ -78,382 +83,6 @@ class GenerationResult:
     provider: str | None = None
 
 
-# Default budget percentage distributions from Section 7 of EVENTGENIE_MASTER_PROMPT.md
-DEFAULT_BUDGET_SPLITS: dict[str, list[ProposedBudgetLine]] = {
-    "wedding": [
-        ProposedBudgetLine(key="venue", label="Venue & Hall Rental", percent=25.0),
-        ProposedBudgetLine(key="catering", label="Catering & Food Service", percent=30.0),
-        ProposedBudgetLine(key="decor", label="Decor, Florals & Lighting", percent=10.0),
-        ProposedBudgetLine(key="photo_video", label="Photography & Videography", percent=9.0),
-        ProposedBudgetLine(key="attire_jewellery", label="Attire & Jewellery", percent=10.0),
-        ProposedBudgetLine(key="entertainment", label="Music, DJ & Entertainment", percent=5.0),
-        ProposedBudgetLine(key="invitations_gifts", label="Invitations & Favors", percent=3.0),
-        ProposedBudgetLine(key="contingency", label="Emergency & Contingency", percent=8.0),
-    ],
-    "birthday": [
-        ProposedBudgetLine(key="venue", label="Venue Rental & Setup", percent=20.0),
-        ProposedBudgetLine(key="food", label="Food & Beverages", percent=35.0),
-        ProposedBudgetLine(key="decor", label="Theme Decor & Balloons", percent=15.0),
-        ProposedBudgetLine(key="cake", label="Custom Birthday Cake", percent=8.0),
-        ProposedBudgetLine(
-            key="entertainment_games", label="Games, Host & Entertainment", percent=12.0
-        ),
-        ProposedBudgetLine(key="return_gifts", label="Party Favors & Return Gifts", percent=5.0),
-        ProposedBudgetLine(key="contingency", label="Contingency Buffer", percent=5.0),
-    ],
-    "community": [
-        ProposedBudgetLine(key="venue_permits", label="Venue & Civic Permits", percent=20.0),
-        ProposedBudgetLine(
-            key="logistics_sound_stage", label="Stage, Sound & AV Logistics", percent=25.0
-        ),
-        ProposedBudgetLine(
-            key="food_refreshments", label="Community Food & Refreshments", percent=20.0
-        ),
-        ProposedBudgetLine(key="publicity", label="Publicity, Banners & Outreach", percent=10.0),
-        ProposedBudgetLine(
-            key="volunteers_safety", label="Safety, First Aid & Volunteers", percent=10.0
-        ),
-        ProposedBudgetLine(key="supplies", label="Event Supplies & Signage", percent=5.0),
-        ProposedBudgetLine(key="contingency", label="Contingency Fund", percent=10.0),
-    ],
-}
-
-# Default timeline tasks with day offsets before event date
-DEFAULT_TIMELINE_TASKS: dict[str, list[ProposedTask]] = {
-    "wedding": [
-        ProposedTask(
-            title="Book wedding venue and catering",
-            phase="6 months out",
-            offset_days=-180,
-            category_key="venue",
-        ),
-        ProposedTask(
-            title="Finalize photographer and videographer",
-            phase="4 months out",
-            offset_days=-120,
-            category_key="photo_video",
-        ),
-        ProposedTask(
-            title="Design and dispatch wedding invitations",
-            phase="3 months out",
-            offset_days=-90,
-            category_key="invitations_gifts",
-        ),
-        ProposedTask(
-            title="Select ceremonial attire and schedule fittings",
-            phase="2 months out",
-            offset_days=-60,
-            category_key="attire_jewellery",
-        ),
-        ProposedTask(
-            title="Finalize floral decor, stage design, and lighting",
-            phase="1 month out",
-            offset_days=-30,
-            category_key="decor",
-        ),
-        ProposedTask(
-            title="Confirm final guest headcount with caterer",
-            phase="2 weeks out",
-            offset_days=-14,
-            category_key="catering",
-        ),
-        ProposedTask(
-            title="Vendor coordination walk-through and rehearsal",
-            phase="2 days out",
-            offset_days=-2,
-            category_key="general",
-        ),
-        ProposedTask(
-            title="Wedding day ceremonies and reception coordination",
-            phase="Day of event",
-            offset_days=0,
-            category_key="general",
-        ),
-    ],
-    "birthday": [
-        ProposedTask(
-            title="Reserve party venue or outdoor space",
-            phase="1 month out",
-            offset_days=-30,
-            category_key="venue",
-        ),
-        ProposedTask(
-            title="Send invitations and track RSVPs",
-            phase="3 weeks out",
-            offset_days=-21,
-            category_key="general",
-        ),
-        ProposedTask(
-            title="Order custom birthday cake and confirm food menu",
-            phase="2 weeks out",
-            offset_days=-14,
-            category_key="cake",
-        ),
-        ProposedTask(
-            title="Purchase theme decorations, balloons, and return gifts",
-            phase="1 week out",
-            offset_days=-7,
-            category_key="decor",
-        ),
-        ProposedTask(
-            title="Finalize party games playlist and host schedule",
-            phase="2 days out",
-            offset_days=-2,
-            category_key="entertainment_games",
-        ),
-        ProposedTask(
-            title="Party setup, entertainment hosting, and cake cutting",
-            phase="Day of event",
-            offset_days=0,
-            category_key="general",
-        ),
-    ],
-    "community": [
-        ProposedTask(
-            title="Secure venue approval, ground permissions, and civic permits",
-            phase="2 months out",
-            offset_days=-60,
-            category_key="venue_permits",
-        ),
-        ProposedTask(
-            title="Launch community outreach campaign and volunteer sign-ups",
-            phase="6 weeks out",
-            offset_days=-45,
-            category_key="publicity",
-        ),
-        ProposedTask(
-            title="Book stage, AV equipment, sound system, and chairs",
-            phase="1 month out",
-            offset_days=-30,
-            category_key="logistics_sound_stage",
-        ),
-        ProposedTask(
-            title="Organize volunteer briefing, safety kits, and traffic plan",
-            phase="2 weeks out",
-            offset_days=-14,
-            category_key="volunteers_safety",
-        ),
-        ProposedTask(
-            title="Procure event banners, signage, and refreshments",
-            phase="1 week out",
-            offset_days=-7,
-            category_key="supplies",
-        ),
-        ProposedTask(
-            title="Stage assembly, AV setup, and sound check",
-            phase="1 day out",
-            offset_days=-1,
-            category_key="logistics_sound_stage",
-        ),
-        ProposedTask(
-            title="Event day operations, crowd safety, and venue cleanup",
-            phase="Day of event",
-            offset_days=0,
-            category_key="general",
-        ),
-    ],
-}
-
-# Default vendor checklists per event type
-DEFAULT_VENDORS: dict[str, list[VendorItem]] = {
-    "wedding": [
-        VendorItem(
-            category_key="venue",
-            label="Venue / Hall Manager",
-            questions_to_ask=[
-                "What is the maximum guest capacity and curfew timing?",
-                "Are outside caterers and decorators allowed without penalty fees?",
-                "Is valet parking and power backup included in the rental cost?",
-            ],
-            documents_to_request=[
-                "Rental agreement and fire/safety NOC",
-                "Itemized pricing sheet with overtime fee schedule",
-                "Cancellation, refund, and date-rescheduling policy",
-            ],
-            red_flags=[
-                "Refusal to commit overtime rates in writing",
-                "Unclear policy on generator fuel charges during outages",
-                "No dedicated point of contact on the event day",
-            ],
-        ),
-        VendorItem(
-            category_key="catering",
-            label="Catering & Beverage Provider",
-            questions_to_ask=[
-                "How many live counters and service staff are provided per 50 guests?",
-                "Can you conduct a full menu tasting session before final confirmation?",
-                "What protocol do you follow for food replenishment and leftover disposal?",
-            ],
-            documents_to_request=[
-                "FSSAI / Food hygiene safety license",
-                "Sample menu contract with allergen declarations",
-                "Staffing ratio commitment letter",
-            ],
-            red_flags=[
-                "No food safety registration or license",
-                "Vague answers regarding extra plate counts and buffet wastage",
-                "Unwillingness to provide references from recent weddings",
-            ],
-        ),
-        VendorItem(
-            category_key="photo_video",
-            label="Photography & Videography Lead",
-            questions_to_ask=[
-                "Will the primary photographer listed in the contract attend in person?",
-                "What is the exact delivery timeline for raw files, teaser video, and final album?",
-                "How many camera operators and drones will cover the ceremonies?",
-            ],
-            documents_to_request=[
-                "Service contract with delivery milestone dates",
-                "Portfolio of complete unedited wedding albums",
-                "Equipment backup plan document",
-            ],
-            red_flags=[
-                "Delivery timeline exceeding 90 days without penalty clause",
-                "No backup camera bodies or dual SD card recording",
-                "Subcontracting coverage to unvetted freelance interns",
-            ],
-        ),
-    ],
-    "birthday": [
-        VendorItem(
-            category_key="venue",
-            label="Party Venue Host",
-            questions_to_ask=[
-                "What time can we access the hall for balloon and theme setup?",
-                "Are outside music systems, confetti, and pinatas permitted?",
-                "Is cleaning and trash removal included post-party?",
-            ],
-            documents_to_request=[
-                "Booking receipt and time-slot contract",
-                "House rules on decor attachment and wall adhesive restrictions",
-            ],
-            red_flags=[
-                "Hidden cleaning fees added after verbal confirmation",
-                "Strict noise bans that prevent normal party games and music",
-            ],
-        ),
-        VendorItem(
-            category_key="cake",
-            label="Custom Cake Bakery",
-            questions_to_ask=[
-                "What flavors and eggless / vegan options are available for the tier cake?",
-                "Do you provide temperature-controlled delivery to the venue?",
-                "Can you replicate the exact design reference provided?",
-            ],
-            documents_to_request=[
-                "Order invoice with exact weight, flavor, and delivery window",
-                "Portfolio of custom birthday theme cakes",
-            ],
-            red_flags=[
-                "No refrigerated delivery vehicle for cream/fondant cakes",
-                "No confirmation of delivery time window",
-            ],
-        ),
-    ],
-    "community": [
-        VendorItem(
-            category_key="logistics_sound_stage",
-            label="Audio-Visual & Stage Contractor",
-            questions_to_ask=[
-                "What is the wattage and coverage area of the sound system for outdoor crowds?",
-                "Do you provide a silent diesel generator for uninterrupted power?",
-                "Is an on-site audio technician stationed throughout the event?",
-            ],
-            documents_to_request=[
-                "Equipment list and electrical load requirement calculation",
-                "Public liability insurance and vendor registration",
-            ],
-            red_flags=[
-                "No backup microphones or spare mixer channels on site",
-                "Underpowered PA system for the venue size and expected crowd",
-            ],
-        ),
-    ],
-}
-
-# Default creative ideas per event type
-DEFAULT_IDEAS: dict[str, IdeaSet] = {
-    "wedding": IdeaSet(
-        themes=[
-            "Royal Heritage: Brass lamps, marigold garlands, and raw silk draping",
-            "Modern Pastel Elegance: Ivory florals, fairy lights, and subtle eucalyptus accents",
-            "Eco-Conscious Botanical: Terracotta pots, banana fiber seating, and potted favors",
-        ],
-        menu=[
-            "Welcome: Spiced coconut cooler and saffron almond thandai",
-            "Live Counters: Artisanal chaat station and freshly rolled mini dosas",
-            "Main Feast: Regional royal thali featuring seasonal specialties",
-            "Dessert: Hot artisanal jalebi paired with saffron rabdi",
-        ],
-        activities=[
-            "Sangeet dance performances with custom family video montages",
-            "Live traditional shehnai and flute instrumental welcome",
-            "Interactive Polaroid guestbook with handwritten blessings",
-        ],
-        decor=[
-            "Mandap framed with fresh tuberose and golden bells",
-            "Suspended floral canopies over dining pavilions",
-            "Warm ambient LED wash lights highlighting architectural elements",
-        ],
-        extras=[
-            "Custom luggage tags or brass diya return favors",
-            "Emergency hospitality kits in restrooms (bobby pins, safety pins, mints)",
-        ],
-    ),
-    "birthday": IdeaSet(
-        themes=[
-            "Space Explorer: Midnight blue starry backdrops, neon glow sticks, and rocket props",
-            "Carnival Fiesta: Vibrant striped canopies, popcorn carts, and balloon arches",
-            "Retro Neon Arcade: Pixel art banners, arcade games, and customized glow bands",
-        ],
-        menu=[
-            "Sliders, mini pizzas, and loaded nachos with cheese fountain",
-            "Fresh fruit skewers and mocktail slushies",
-            "Theme-sculpted birthday cake with confetti cupcakes",
-        ],
-        activities=[
-            "Interactive treasure hunt with clue cards and prizes",
-            "Custom photo booth with whimsical props and instant prints",
-            "High-energy musical freeze dance and party games",
-        ],
-        decor=[
-            "Organic balloon garland backdrop with personalized LED neon name sign",
-            "Color-coordinated table runners with theme centerpieces",
-        ],
-        extras=[
-            "Personalized eco-friendly canvas tote bags with craft kits as return gifts",
-            "Custom party badges and wristbands for all guests",
-        ],
-    ),
-    "community": IdeaSet(
-        themes=[
-            "Green Neighborhood: Sustainable living, plant exchanges, and eco-friendly stalls",
-            "Cultural Unity Festival: Folk music, heritage crafts, and multicultural food fair",
-            "Wellness & Sports Day: Fun marathon, yoga workshops, and cooperative games",
-        ],
-        menu=[
-            "Healthy wholesome grain bowls, wraps, and fresh seasonal fruit cups",
-            "Local street food stalls managed by neighborhood culinary artisans",
-            "Hydration stations with infused water and fresh herbal coolers",
-        ],
-        activities=[
-            "Community talent showcase and youth battle-of-the-bands",
-            "Interactive DIY craft workshops and pottery wheel demonstrations",
-            "Friendly neighborhood tug-of-war and relay races",
-        ],
-        decor=[
-            "Colorful fabric pennants and bunting made from upcycled cloth",
-            "Clear bilingual directional signage and event schedule boards",
-        ],
-        extras=[
-            "Dedicated waste segregation stations with composting volunteers",
-            "Well-marked first aid booth and lost-and-found helpdesk",
-        ],
-    ),
-}
-
-
 def load_prompt(filename: str) -> str:
     """Load prompt template from app/prompts/v1 directory."""
     path = Path(__file__).resolve().parent / "prompts" / PROMPT_VERSION / filename
@@ -464,7 +93,7 @@ def load_prompt(filename: str) -> str:
 
 
 def fallback_plan(inputs: PlanInputs | dict[str, Any]) -> EventPlan:
-    """Generate a deterministic, complete, schema-valid EventPlan without calling an LLM."""
+    """Produce deterministic fallback EventPlan based on Section 7 default splits."""
     if isinstance(inputs, dict):
         validated_inputs = PlanInputs.model_validate(inputs)
     elif isinstance(inputs, PlanInputs):
@@ -473,33 +102,22 @@ def fallback_plan(inputs: PlanInputs | dict[str, Any]) -> EventPlan:
         raise TypeError(f"Expected PlanInputs or dict, got {type(inputs)}")
 
     event_type = validated_inputs.event_type.lower()
-    if event_type not in DEFAULT_BUDGET_SPLITS:
-        event_type = "community"
+    proposed_budget = DEFAULT_BUDGET_SPLITS.get(event_type, DEFAULT_BUDGET_SPLITS["wedding"])
+    proposed_timeline = DEFAULT_TIMELINE_TASKS.get(event_type, DEFAULT_TIMELINE_TASKS["wedding"])
+    vendors = DEFAULT_VENDORS.get(event_type, DEFAULT_VENDORS["wedding"])
+    ideas = DEFAULT_IDEAS.get(event_type, DEFAULT_IDEAS["wedding"])
 
-    # 1. Compute exact budget lines using deterministic budget tool
-    budget_proposals = DEFAULT_BUDGET_SPLITS[event_type]
     budget_lines = calculate_budget(
-        lines=budget_proposals,
-        total_budget=validated_inputs.total_budget,
+        lines=proposed_budget, total_budget=validated_inputs.total_budget
     )
+    timeline_tasks = schedule_tasks(tasks=proposed_timeline, event_date=validated_inputs.event_date)
 
-    # 2. Compute timeline dates and sort chronologically using scheduler tool
-    timeline_proposals = DEFAULT_TIMELINE_TASKS[event_type]
-    timeline_tasks = schedule_tasks(
-        tasks=timeline_proposals,
-        event_date=validated_inputs.event_date,
-    )
-
-    # 3. Retrieve vendor guidelines and creative ideas
-    vendors = DEFAULT_VENDORS.get(event_type, DEFAULT_VENDORS["community"])
-    ideas = DEFAULT_IDEAS.get(event_type, DEFAULT_IDEAS["community"])
-
-    # 4. Formulate explicit assumptions
     assumptions = [
-        "All budget line items are estimated benchmark allocations and subject to local vendor quotes.",
-        "Timeline tasks are scheduled backward from the event date and clamped within current calendar bounds.",
-        "Customs, rituals, and ceremonies vary widely by family, community, and region; confirm specifics with elders.",
-        "Generated using deterministic fallback template (no external LLM call).",
+        "Plan generated from deterministic expert benchmark templates (GenAI service fallback).",
+        "Budget allocations follow standardized regional percentage benchmarks.",
+        "Timeline tasks are backward-scheduled from the event date.",
+        "Customs, rituals, and ceremonies vary widely by family; confirm specifics with elders.",
+        "All prices and percentage allocations are labelled estimates and require local vendor confirmation.",
     ]
 
     return EventPlan(
@@ -515,25 +133,15 @@ def fallback_plan(inputs: PlanInputs | dict[str, Any]) -> EventPlan:
         vendors=vendors,
         ideas=ideas,
         assumptions=assumptions,
-        sources_used=["Standard Event Benchmarks (v1)"],
+        sources_used=["EventGenie Verified Benchmark Template Knowledge Base"],
     )
 
 
 def _assemble_event_plan(proposal: PlanProposalV0, inputs: PlanInputs) -> EventPlan:
     """Assemble and validate a full EventPlan from an LLM proposal and user inputs."""
-    # Deterministic budget calculation (rounding reconciliation)
-    budget_lines = calculate_budget(
-        lines=proposal.budget,
-        total_budget=inputs.total_budget,
-    )
+    budget_lines = calculate_budget(lines=proposal.budget, total_budget=inputs.total_budget)
+    timeline_tasks = schedule_tasks(tasks=proposal.timeline, event_date=inputs.event_date)
 
-    # Deterministic timeline calculation (date offsets, clamping, sorting)
-    timeline_tasks = schedule_tasks(
-        tasks=proposal.timeline,
-        event_date=inputs.event_date,
-    )
-
-    # Compile assumptions
     assumptions = list(proposal.assumptions)
     assumptions.append(
         "All prices and percentage allocations are labelled estimates and require local vendor confirmation."
@@ -557,21 +165,23 @@ def _assemble_event_plan(proposal: PlanProposalV0, inputs: PlanInputs) -> EventP
 
 
 def sanitize_error_message(err: Exception | str | None) -> str:
-    """Transform raw provider or system errors into concise, user-friendly notices.
-
-    Ensures that raw API JSON payloads, stack traces, and internal quota details
-    are never leaked to users in the UI, keeping full diagnostics strictly in logs.
-    """
+    """Transform raw provider or system errors into concise, user-friendly notices."""
     if not err:
         return "AI service is busy, showing a benchmark plan. Try again later or add your own key in the sidebar."
 
     err_str = str(err)
     err_lower = err_str.lower()
 
-    if any(k in err_lower for k in ("429", "quota", "rate limit", "resource exhausted", "resource_exhausted")):
+    if any(
+        k in err_lower
+        for k in ("429", "quota", "rate limit", "resource exhausted", "resource_exhausted")
+    ):
         return "AI service is busy, showing a benchmark plan. Try again later or add your own key in the sidebar."
 
-    if any(k in err_lower for k in ("invalid api key", "auth", "api key", "unauthorized", "permission denied")):
+    if any(
+        k in err_lower
+        for k in ("invalid api key", "auth", "api key", "unauthorized", "permission denied")
+    ):
         return "Invalid API key or credentials. Showing benchmark plan. Enter your API key in the sidebar to generate custom plans."
 
     if any(k in err_lower for k in ("timeout", "timed out", "timedout")):
@@ -580,79 +190,32 @@ def sanitize_error_message(err: Exception | str | None) -> str:
     return "AI service is busy, showing a benchmark plan. Try again later or add your own key in the sidebar."
 
 
-def generate_plan_v0(
-    inputs: PlanInputs | dict[str, Any],
-    llm: LLM | None = None,
-    max_repairs: int = 2,
-) -> GenerationResult:
-    """Generate an event plan using single-call LLM generation with repair loop and fallback.
+def _prepare_prompts(inputs: PlanInputs) -> tuple[str, str]:
+    """Load and format the system and initial user prompts for plan generation."""
+    system_prompt = load_prompt("system.md")
+    user_prompt_template = load_prompt("plan_v0.md")
+    user_prompt = user_prompt_template.format(
+        event_type=inputs.event_type,
+        event_date=inputs.event_date.isoformat(),
+        guests=inputs.guests,
+        total_budget=inputs.total_budget,
+        currency=inputs.currency,
+        city=inputs.city or "General Metro",
+        vibe=inputs.vibe or "Festive and welcoming",
+        notes=inputs.notes or "None provided",
+    )
+    return system_prompt, user_prompt
 
-    Flow:
-    1. Normalize and validate inputs (PlanInputs)
-    2. Check for configured LLM provider; if unavailable or missing key, return fallback plan
-    3. Generate structured proposal (PlanProposalV0) via LLM
-    4. Compute exact budget amounts and timeline dates deterministically
-    5. Validate complete EventPlan with Pydantic
-    6. If validation fails, initiate repair loop (up to max_repairs retries) sending error back
-    7. If all retries fail or an unrecoverable error occurs, return fallback plan with notice
 
-    Args:
-        inputs: User intake inputs (PlanInputs or dict).
-        llm: Optional instantiated LLM client; if None, resolves via get_llm().
-        max_repairs: Maximum repair attempts on validation failure (default 2).
-
-    Returns:
-        GenerationResult containing EventPlan, is_fallback boolean, notices, and telemetry.
-    """
-    if isinstance(inputs, dict):
-        validated_inputs = PlanInputs.model_validate(inputs)
-    elif isinstance(inputs, PlanInputs):
-        validated_inputs = inputs
-    else:
-        raise TypeError(f"Expected PlanInputs or dict, got {type(inputs)}")
-
-    # Resolve LLM client
-    client = llm
-    if client is None:
-        try:
-            client = get_llm()
-        except (LLMAuthError, Exception) as e:
-            logger.warning("Could not instantiate LLM client: %s. Using fallback template.", e)
-            plan = fallback_plan(validated_inputs)
-            friendly_msg = sanitize_error_message(e)
-            notice = f"NOTICE: {friendly_msg}"
-            plan.assumptions.insert(0, notice)
-            return GenerationResult(plan=plan, is_fallback=True, notices=[notice])
-
-    # Check if API key is present
-    if not getattr(client, "api_key", None):
-        notice = "NOTICE: AI service key is not configured. Showing benchmark plan. Enter your API key in the sidebar to generate custom plans."
-        plan = fallback_plan(validated_inputs)
-        plan.assumptions.insert(0, notice)
-        return GenerationResult(plan=plan, is_fallback=True, notices=[notice])
-
-    # Load prompts
-    try:
-        system_prompt = load_prompt("system.md")
-        user_prompt_template = load_prompt("plan_v0.md")
-        current_prompt = user_prompt_template.format(
-            event_type=validated_inputs.event_type,
-            event_date=validated_inputs.event_date.isoformat(),
-            guests=validated_inputs.guests,
-            total_budget=validated_inputs.total_budget,
-            currency=validated_inputs.currency,
-            city=validated_inputs.city or "General Metro",
-            vibe=validated_inputs.vibe or "Festive and welcoming",
-            notes=validated_inputs.notes or "None provided",
-        )
-    except Exception as e:
-        logger.error("Failed to load or format prompt: %s. Using fallback plan.", e)
-        plan = fallback_plan(validated_inputs)
-        notice = f"NOTICE: Prompt template error ({e}). Showing benchmark fallback plan."
-        plan.assumptions.insert(0, notice)
-        return GenerationResult(plan=plan, is_fallback=True, notices=[notice])
-
-    # Execution & Repair Loop
+def _execute_repair_loop(
+    client: LLM,
+    system_prompt: str,
+    initial_prompt: str,
+    inputs: PlanInputs,
+    max_repairs: int,
+) -> tuple[EventPlan | None, Exception | None]:
+    """Execute LLM generation attempts with an automated repair loop for schema errors."""
+    current_prompt = initial_prompt
     last_error: Exception | None = None
 
     for attempt in range(max_repairs + 1):
@@ -664,56 +227,118 @@ def generate_plan_v0(
                 schema=PlanProposalV0,
                 temperature=0.3,
             )
-
-            # Assemble and validate full EventPlan
-            plan = _assemble_event_plan(proposal, validated_inputs)
-            active_provider = getattr(client, "active_provider", None) or getattr(
-                client, "__class__", type(client)
-            ).__name__.lower().replace("llm", "")
-            return GenerationResult(
-                plan=plan,
-                is_fallback=False,
-                notices=[],
-                metadata=getattr(client, "last_metadata", None),
-                provider=active_provider,
-            )
-
-        except (LLMValidationError, ValidationError, ValueError) as e:
-            last_error = e
+            plan = _assemble_event_plan(proposal, inputs)
+            return plan, None
+        except (LLMValidationError, ValidationError, ValueError) as val_err:
+            last_error = val_err
             logger.warning(
-                "Plan validation failed on attempt %d/%d: %s",
-                attempt + 1,
-                max_repairs + 1,
-                e,
+                "Plan validation error on attempt %d/%d: %s", attempt + 1, max_repairs + 1, val_err
             )
             if attempt < max_repairs:
-                # Send error description back in the repair prompt
                 current_prompt = (
                     f"{current_prompt}\n\n"
                     f"--- REPAIR INSTRUCTION ---\n"
-                    f"The previous output failed validation with the following error:\n{e}\n"
+                    f"The previous output failed validation: {val_err}\n"
                     f"Please regenerate the entire JSON adhering strictly to all requirements and fixing this error."
                 )
             else:
                 logger.error("All %d repair attempts exhausted.", max_repairs)
+        except (LLMRateLimitError, LLMAuthError, LLMError) as err:
+            return None, err
+        except Exception as unk_err:
+            logger.error("Unexpected error during plan generation attempt: %s", unk_err)
+            return None, unk_err
 
-        except (LLMRateLimitError, LLMAuthError, LLMError) as e:
-            last_error = e
-            logger.warning("LLM call failed with %s: %s. Switching to fallback plan.", type(e).__name__, e)
-            break
-        except Exception as e:
-            last_error = e
-            logger.error("Unexpected error during plan generation: %s", e)
-            break
+    return None, last_error
+
+
+def _resolve_llm_client(
+    client: LLM | None, inputs: PlanInputs
+) -> tuple[LLM | None, GenerationResult | None]:
+    """Resolve the LLM client or return an immediate fallback GenerationResult if unconfigured."""
+    if client is not None:
+        if not getattr(client, "api_key", None):
+            notice = "NOTICE: AI service key is not configured. Showing benchmark plan. Enter your API key in the sidebar to generate custom plans."
+            plan = fallback_plan(inputs)
+            plan.assumptions.insert(0, notice)
+            return None, GenerationResult(
+                plan=plan, is_fallback=True, notices=[notice], provider="fallback"
+            )
+        return client, None
+
+    try:
+        resolved = get_llm()
+        if not getattr(resolved, "api_key", None):
+            notice = "NOTICE: AI service key is not configured. Showing benchmark plan. Enter your API key in the sidebar to generate custom plans."
+            plan = fallback_plan(inputs)
+            plan.assumptions.insert(0, notice)
+            return None, GenerationResult(
+                plan=plan, is_fallback=True, notices=[notice], provider="fallback"
+            )
+        return resolved, None
+    except (LLMAuthError, Exception) as e:
+        logger.warning("Could not instantiate LLM client: %s. Using fallback template.", e)
+        plan = fallback_plan(inputs)
+        notice = f"NOTICE: {sanitize_error_message(e)}"
+        plan.assumptions.insert(0, notice)
+        return None, GenerationResult(
+            plan=plan, is_fallback=True, notices=[notice], provider="fallback"
+        )
+
+
+def generate_plan_v0(
+    inputs: PlanInputs | dict[str, Any],
+    llm: LLM | None = None,
+    max_repairs: int = 2,
+) -> GenerationResult:
+    """Generate an event plan using single-call LLM generation with repair loop and fallback."""
+    if isinstance(inputs, dict):
+        validated_inputs = PlanInputs.model_validate(inputs)
+    elif isinstance(inputs, PlanInputs):
+        validated_inputs = inputs
+    else:
+        raise TypeError(f"Expected PlanInputs or dict, got {type(inputs)}")
+
+    client, fallback_res = _resolve_llm_client(llm, validated_inputs)
+    if fallback_res is not None or client is None:
+        return fallback_res  # type: ignore
+
+    try:
+        system_prompt, user_prompt = _prepare_prompts(validated_inputs)
+    except Exception as e:
+        logger.error("Failed to load or format prompt: %s. Using fallback plan.", e)
+        plan = fallback_plan(validated_inputs)
+        notice = f"NOTICE: Prompt template error ({e}). Showing benchmark fallback plan."
+        plan.assumptions.insert(0, notice)
+        return GenerationResult(plan=plan, is_fallback=True, notices=[notice], provider="fallback")
+
+    plan, error = _execute_repair_loop(
+        client=client,
+        system_prompt=system_prompt,
+        initial_prompt=user_prompt,
+        inputs=validated_inputs,
+        max_repairs=max_repairs,
+    )
+
+    if plan is not None:
+        active_provider = getattr(client, "active_provider", None) or getattr(
+            client, "__class__", type(client)
+        ).__name__.lower().replace("llm", "")
+        return GenerationResult(
+            plan=plan,
+            is_fallback=False,
+            notices=[],
+            metadata=getattr(client, "last_metadata", None),
+            provider=active_provider,
+        )
 
     # Fallback path if repairs exhausted or LLM failed
-    logger.error("All generation attempts failed. Using fallback template plan: %s", last_error)
-    friendly_msg = sanitize_error_message(last_error)
-    notice = f"NOTICE: {friendly_msg}"
-    plan = fallback_plan(validated_inputs)
-    plan.assumptions.insert(0, notice)
+    logger.error("All generation attempts failed. Using fallback template plan: %s", error)
+    notice = f"NOTICE: {sanitize_error_message(error)}"
+    fb_plan = fallback_plan(validated_inputs)
+    fb_plan.assumptions.insert(0, notice)
     return GenerationResult(
-        plan=plan,
+        plan=fb_plan,
         is_fallback=True,
         notices=[notice],
         metadata=getattr(client, "last_metadata", None),

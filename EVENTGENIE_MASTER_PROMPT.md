@@ -28,13 +28,13 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-31 |
-| Last completed task | S-02 (Problem statement alignment: README traceability table, all 3 event types & 4 outputs verified) |
-| Currently in progress | S-03 (Code quality: dead code cleanup, modular architecture, docstrings, Mermaid diagram) |
-| **NEXT TASK** | **S-03** (Code quality: clean scripts/, ensure typed functions, docstrings, Mermaid diagram and folder map) |
+| Last completed task | S-03 (Code quality: modular architecture, decomposed renderers, Mermaid diagram & folder map in README) |
+| Currently in progress | S-04 (Security: secrets audit, input validation/sanitization, injection defenses, SECURITY.md) |
+| **NEXT TASK** | **S-04** (Security: re-run secrets audit across git history, input validation/sanitization, prompt injection guardrails, SECURITY.md) |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | _awaiting deployment URL from share.streamlit.io_ |
 | Blockers | none (remote pushed to https://github.com/jeevanL16/eventgenie.git) |
-| Half-done work / notes for next agent | S-01 and S-02 complete. Traceability matrix in README and 112 tests passing. S-03 code quality & modularization next. |
+| Half-done work / notes for next agent | S-01, S-02, and S-03 complete. All 112 tests passing and ruff clean. Proceed directly to S-04 (Security). |
 
 ---
 
@@ -285,7 +285,7 @@ eventgenie/
   *Acceptance:* clean-venv install passes; app starts with no Debian/pip install errors.
 - [x] **S-02** **PROBLEM STATEMENT ALIGNMENT (High Impact)**: Add README "Problem Statement Traceability" table mapping verbatim requirements (weddings, birthdays, community events, budgets, timelines, vendor checklists, personalized ideas, GenAI) to feature, file/function, and test. Verify all 3 event types generate all 4 outputs with rich personalization (vibe, notes, diet, city, guests).
   *Acceptance:* traceability table complete; every row has a passing test; 4 clear tabs with self-explanatory UI.
-- [ ] **S-03** **CODE QUALITY (High Impact)**: Clean dead code in `scripts/`, consistent naming, type hints, docstrings, no functions > ~50 lines (split `pipeline.py` into modular components). Centralize constants. Lint clean with `ruff`. Add Mermaid architecture diagram and folder map in README.
+- [x] **S-03** **CODE QUALITY (High Impact)**: Clean dead code in `scripts/`, consistent naming, type hints, docstrings, no functions > ~50 lines (split `pipeline.py` into modular components). Centralize constants. Lint clean with `ruff`. Add Mermaid architecture diagram and folder map in README.
   *Acceptance:* ruff check and format clean; README architecture section complete.
 - [ ] **S-04** **SECURITY (Medium Impact)**: Re-run secrets audit across all git history. Input validation/sanitization (length limits, allowed ranges, control character stripping, no raw `unsafe_allow_html` with user/LLM text). Prompt injection defenses with data-wrapping and Pydantic validation. Friendly error masking. Add `SECURITY.md`.
   *Acceptance:* tests for input validation and prompt injection pass; SECURITY.md committed.
@@ -478,6 +478,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | D-8 | 2026-10-30 | Default Groq model set to qwen/qwen3.8-27b | Verified live against the Groq API model catalog for active tier; delivers fast structured JSON output |
 | D-9 | 2026-10-31 | Split runtime dependencies in requirements.txt from test/dev tooling in requirements-dev.txt; remove unused packages.txt | Prevents build failures on Streamlit Community Cloud caused by Debian apt package incompatibilities and testing tool bloat |
 | D-10 | 2026-10-31 | Explicit Problem Statement Traceability Matrix in README and automated test suite | Directly maps code deliverables to hackathon evaluation criteria (weddings, birthdays, community events x budgets, timelines, vendors, ideas) |
+| D-11 | 2026-10-31 | Modular decomposition: extract templates.py, split tools and UI renderers to < 50-line functions | Enhances readability, testability, and reviewer evaluation without breaking test compatibility |
 
 ---
 
@@ -507,6 +508,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | F-06 | Pre-deploy check: full test suite verified (108 tests passing), ruff clean; created DEPLOY.md deployment guide; reordered remaining roadmap post-deploy | DEPLOY.md, tests/test_main_app.py, tests/test_pipeline_v0.py, EVENTGENIE_MASTER_PROMPT.md | 108/108 tests pass, ruff clean, ready for T-09 |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | S-01 | Fixed Streamlit deploy: streamlined requirements.txt to runtime-only packages, moved test tools to requirements-dev.txt, deleted packages.txt, added .python-version (3.11), verified clean venv install | requirements.txt, requirements-dev.txt, packages.txt, .python-version, DEPLOY.md, EVENTGENIE_MASTER_PROMPT.md | Clean venv pip install and imports verified |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | S-02 | Added Problem Statement Traceability Matrix to README mapping all requirements to code & tests; added tests/test_problem_statement.py; refined UI header & empty state for self-explanatory clarity | README.md, app/main.py, tests/test_problem_statement.py, EVENTGENIE_MASTER_PROMPT.md | 112/112 tests pass, ruff clean |
+| 2026-10-31 | Antigravity Gemini 3.8 Flash | S-03 | Modularized pipeline.py (extracted templates.py), decomposed tools/budget.py, tools/scheduler.py, and main.py into sub-50-line renderers; added scripts/README.md; added Mermaid architecture diagram and directory tree to README | app/templates.py, app/pipeline.py, app/main.py, app/tools/budget.py, app/tools/scheduler.py, scripts/README.md, README.md, EVENTGENIE_MASTER_PROMPT.md | 112/112 tests pass, ruff clean, architecture section complete |
 
 ---
 

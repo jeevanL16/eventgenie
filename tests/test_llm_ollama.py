@@ -142,7 +142,9 @@ def test_ollama_connection_error():
 
 
 def test_ollama_model_not_found_404():
-    llm = OllamaLLM(base_url="http://localhost:11434", model_name="nonexistent:latest", max_retries=0)
+    llm = OllamaLLM(
+        base_url="http://localhost:11434", model_name="nonexistent:latest", max_retries=0
+    )
 
     mock_resp = MagicMock(spec=httpx.Response)
     mock_resp.status_code = 404

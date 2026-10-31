@@ -113,9 +113,7 @@ def test_app_sidebar_byok_and_provider_badge():
 def test_app_simulated_429_shows_clean_message_without_raw_json():
     from app.llm.base import LLMRateLimitError
 
-    raw_dump = (
-        "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded', 'details': []}}"
-    )
+    raw_dump = "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded', 'details': []}}"
 
     def _mock_429(inputs, *args, **kwargs):
         if isinstance(inputs, dict):
