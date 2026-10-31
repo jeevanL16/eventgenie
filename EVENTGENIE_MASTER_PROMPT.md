@@ -28,13 +28,13 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-31 |
-| Last completed task | S-01 (Fix Streamlit deploy: split requirements, remove unneeded packages, add .python-version) |
-| Currently in progress | S-02 (Problem statement alignment) |
-| **NEXT TASK** | **S-02** (Problem statement alignment: README traceability table, verify all 3 event types & 4 outputs) |
+| Last completed task | S-02 (Problem statement alignment: README traceability table, all 3 event types & 4 outputs verified) |
+| Currently in progress | S-03 (Code quality: dead code cleanup, modular architecture, docstrings, Mermaid diagram) |
+| **NEXT TASK** | **S-03** (Code quality: clean scripts/, ensure typed functions, docstrings, Mermaid diagram and folder map) |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | _awaiting deployment URL from share.streamlit.io_ |
 | Blockers | none (remote pushed to https://github.com/jeevanL16/eventgenie.git) |
-| Half-done work / notes for next agent | S-01 complete. Clean virtualenv verified. Ready for user redeploy with Python 3.11 selection. S-02 traceability table next. |
+| Half-done work / notes for next agent | S-01 and S-02 complete. Traceability matrix in README and 112 tests passing. S-03 code quality & modularization next. |
 
 ---
 
@@ -283,7 +283,7 @@ eventgenie/
 
 - [x] **S-01** **FIX STREAMLIT DEPLOY (requirements install error)**: Split dependencies: `requirements.txt` = runtime only (`streamlit`, `pandas`, `pydantic`, `groq`, `google-genai`, `httpx`, `python-dotenv`). Remove heavy/unneeded packages (`torch`, `sentence-transformers`, `chromadb`, `weasyprint`, `ics`, `packages.txt`). Use loose lower bounds (`>=`). Add `.python-version` (3.11). Verify clean venv install.
   *Acceptance:* clean-venv install passes; app starts with no Debian/pip install errors.
-- [ ] **S-02** **PROBLEM STATEMENT ALIGNMENT (High Impact)**: Add README "Problem Statement Traceability" table mapping verbatim requirements (weddings, birthdays, community events, budgets, timelines, vendor checklists, personalized ideas, GenAI) to feature, file/function, and test. Verify all 3 event types generate all 4 outputs with rich personalization (vibe, notes, diet, city, guests).
+- [x] **S-02** **PROBLEM STATEMENT ALIGNMENT (High Impact)**: Add README "Problem Statement Traceability" table mapping verbatim requirements (weddings, birthdays, community events, budgets, timelines, vendor checklists, personalized ideas, GenAI) to feature, file/function, and test. Verify all 3 event types generate all 4 outputs with rich personalization (vibe, notes, diet, city, guests).
   *Acceptance:* traceability table complete; every row has a passing test; 4 clear tabs with self-explanatory UI.
 - [ ] **S-03** **CODE QUALITY (High Impact)**: Clean dead code in `scripts/`, consistent naming, type hints, docstrings, no functions > ~50 lines (split `pipeline.py` into modular components). Centralize constants. Lint clean with `ruff`. Add Mermaid architecture diagram and folder map in README.
   *Acceptance:* ruff check and format clean; README architecture section complete.
@@ -477,6 +477,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | D-7 | 2026-10-30 | Ollama excluded from cloud chain (default LLM_CHAIN becomes groq,gemini) | Cloud hosting environments lack local Ollama daemon; prevent network connection timeouts by requiring explicit OLLAMA_BASE_URL for local runs |
 | D-8 | 2026-10-30 | Default Groq model set to qwen/qwen3.8-27b | Verified live against the Groq API model catalog for active tier; delivers fast structured JSON output |
 | D-9 | 2026-10-31 | Split runtime dependencies in requirements.txt from test/dev tooling in requirements-dev.txt; remove unused packages.txt | Prevents build failures on Streamlit Community Cloud caused by Debian apt package incompatibilities and testing tool bloat |
+| D-10 | 2026-10-31 | Explicit Problem Statement Traceability Matrix in README and automated test suite | Directly maps code deliverables to hackathon evaluation criteria (weddings, birthdays, community events x budgets, timelines, vendors, ideas) |
 
 ---
 
@@ -505,6 +506,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | F-05 | Added get_available_groq_models helper; aligned Decision Log numbering (D-5, D-6, D-7, D-8); updated README with Free-Tier Limits & Provider Failover section | app/llm/groq.py, tests/test_llm_groq.py, README.md, EVENTGENIE_MASTER_PROMPT.md | 9 unit tests pass, README updated |
 | 2026-10-30 | Antigravity Gemini 3.8 Flash | F-06 | Pre-deploy check: full test suite verified (108 tests passing), ruff clean; created DEPLOY.md deployment guide; reordered remaining roadmap post-deploy | DEPLOY.md, tests/test_main_app.py, tests/test_pipeline_v0.py, EVENTGENIE_MASTER_PROMPT.md | 108/108 tests pass, ruff clean, ready for T-09 |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | S-01 | Fixed Streamlit deploy: streamlined requirements.txt to runtime-only packages, moved test tools to requirements-dev.txt, deleted packages.txt, added .python-version (3.11), verified clean venv install | requirements.txt, requirements-dev.txt, packages.txt, .python-version, DEPLOY.md, EVENTGENIE_MASTER_PROMPT.md | Clean venv pip install and imports verified |
+| 2026-10-31 | Antigravity Gemini 3.8 Flash | S-02 | Added Problem Statement Traceability Matrix to README mapping all requirements to code & tests; added tests/test_problem_statement.py; refined UI header & empty state for self-explanatory clarity | README.md, app/main.py, tests/test_problem_statement.py, EVENTGENIE_MASTER_PROMPT.md | 112/112 tests pass, ruff clean |
 
 ---
 

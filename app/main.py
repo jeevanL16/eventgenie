@@ -125,7 +125,7 @@ def main():
     # Top Application Header
     st.markdown('<div class="main-header">✨ EventGenie</div>', unsafe_allow_html=True)
     st.markdown(
-        '<div class="sub-header">Multilingual GenAI Event Planner · $0 Free-Tier Stack</div>',
+        '<div class="sub-header">GenAI-powered planning assistant that helps you organize weddings, birthdays, and community events with budgets, timelines, vendor checklists, and personalized ideas.</div>',
         unsafe_allow_html=True,
     )
 
@@ -263,7 +263,7 @@ def main():
 
         if not result:
             st.info(
-                "👈 Fill out the details on the left and click **Generate Event Plan** to begin!"
+                "👈 **Plan your next event in seconds:** Fill out the intake form on the left to generate your complete 4-part plan (Budget Breakdown, Scheduled Timeline, Vendor Checklist, and Creative Ideas) — or click a demo scenario below!"
             )
 
             st.markdown("### Quick Demo Scenarios")
