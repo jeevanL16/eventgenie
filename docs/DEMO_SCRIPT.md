@@ -116,3 +116,4 @@
 - [ ] Ensure `.env` or Streamlit secrets are active with valid Groq / Gemini keys.
 - [ ] Microphone audio is clear with zero background echo.
 - [ ] Highlight cursor movements smoothly over the 4 tabs and the provider badge.
+

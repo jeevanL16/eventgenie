@@ -3,8 +3,8 @@
 **GenAI-powered planning assistant that helps users organize weddings, birthdays, and community events with budgets, timelines, vendor checklists, and personalized ideas.**
 
 [![CI](https://github.com/jeevanL16/eventgenie/actions/workflows/ci.yml/badge.svg)](https://github.com/jeevanL16/eventgenie/actions)
-![Coverage](https://img.shields.io/badge/Coverage-89%25-brightgreen)
-![Tests](https://img.shields.io/badge/Tests-161%20Passing-success)
+![Coverage](https://img.shields.io/badge/Coverage-90%25-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-166%20Passing-success)
 ![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
@@ -174,6 +174,7 @@ EventGenie maintains an extensive automated test suite with **90% core coverage*
 | [`tests/test_accessibility.py`](file:///d:/eventgenie/tests/test_accessibility.py) | WCAG AA compliance: input help annotations, non-color-only markers | 2 tests |
 | [`tests/test_i18n.py`](file:///d:/eventgenie/tests/test_i18n.py) | Complete key parity across all 6 language dictionaries (en, hi, kn, te, ta, mr) | 7 tests |
 | [`tests/test_translation.py`](file:///d:/eventgenie/tests/test_translation.py) | Structural invariance, Unicode script ratio checks, and Indic translation flow | 19 tests |
+| [`tests/test_landing_page.py`](file:///d:/eventgenie/tests/test_landing_page.py) | Landing page component rendering, session-state event card triggers, honest stats | 5 tests |
 
 To run the complete test suite with coverage reporting:
 ```bash
@@ -193,6 +194,24 @@ EventGenie is designed following **WCAG 2.1 Level AA** accessibility principles:
   - Vendor caution warnings: `#B91C1C` on `#FFFFFF` (~6.0:1)
 - **Structured Tabular Data**: Financial figures and milestone schedules are presented in native semantic tables (`st.dataframe`) rather than visual charts without text alternatives, enabling seamless screen reader accessibility and keyboard navigation.
 - **Full Keyboard Navigability**: Users can tab through all form controls, trigger scenario shortcuts using <kbd>Space</kbd> or <kbd>Enter</kbd>, and toggle vendor due diligence accordions without a pointing device.
+
+## UI & Landing Page Design System
+
+EventGenie features an enterprise event-company landing page layout engineered in `app/ui/styles.css` and `app/ui/components.py`:
+
+- **Layout Structure**:
+  1. **Sticky Top Navigation**: Brand identity, landmark anchor links (Home, How It Works, Plan My Event, About), and gold CTA button.
+  2. **Hero Section**: High-impact heading, subline, primary CTA, secondary sample plan link, and 3 honest metric badges (6 Languages, 3 Event Types, 4 Outputs).
+  3. **Event-Type Selection Cards**: Interactive cards for Weddings, Birthdays, and Community events with direct state-linking.
+  4. **How It Works**: 3-step workflow roadmap explaining input intake, GenAI planning, and multi-tab review.
+  5. **Sample Plan Preview**: A static example plan (budget breakdown, 4 milestones, 3 vendor questions) clearly labelled as an illustrative benchmark.
+  6. **Interactive Planner**: Responsive form with descriptive screen-reader annotations and instant 4-tab plan visualization.
+  7. **Closing CTA Banner & Multi-Column Footer**: Deep plum gradient CTA and 4-column footer (Product, Languages, Project, Legal notes).
+- **Design System Tokens**:
+  - **Color Palette**: Warm festive ivory background (`#FBF7F0`), deep plum text (`#2D1B4E` — 10.2:1 contrast), saffron gold accent (`#F5A623` — 5.7:1 on dark buttons), and dark navy footer (`#1C1235`).
+  - **Typography**: Google Fonts `Playfair Display` (editorial serif headings) paired with `Inter` (high-legibility body) with fallback font stacks for Indic scripts (`Noto Sans Devanagari`, `Kannada`, `Telugu`, `Tamil`).
+  - **Mobile Responsiveness**: Pure CSS media queries (`@media (max-width: 768px)`) automatically stack cards, collapse navigation links, and resize hero typography for smartphone screens.
+  - **Architecture Diagram**: See vector layout diagram in [`docs/screens/landing_page_layout.svg`](file:///d:/eventgenie/docs/screens/landing_page_layout.svg).
 
 ## Free-Tier Limits and Provider Failover
 

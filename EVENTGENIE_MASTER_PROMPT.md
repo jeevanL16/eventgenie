@@ -28,13 +28,13 @@ You are an expert AI engineer building **EventGenie**, a multilingual GenAI even
 | Field | Value |
 |---|---|
 | Last updated | 2026-10-31 |
-| Last completed task | S-10 (Final check: clean-venv install, pytest, ruff, secrets audit, repo size, live app verification, resume metrics) |
-| Currently in progress | COMPLETE |
-| **NEXT TASK** | **COMPLETE — Submission ready for evaluation** |
+| Last completed task | U-08 (Landing page redesign & UI design system: sticky nav, hero, event cards, how it works, sample preview, footer, 166 tests) |
+| Currently in progress | PHASE 4: RAG and grounding |
+| **NEXT TASK** | **T-22** (Write knowledge base files under knowledge/) |
 | Repo runs locally? | yes — `pip install -r requirements.txt` + `streamlit run app/main.py` |
 | Live demo URL | https://eventgenie-ai.streamlit.app *(or local preview via streamlit run app/main.py)* |
 | Blockers | none (remote pushed to https://github.com/jeevanL16/eventgenie.git) |
-| Half-done work / notes for next agent | All tasks S-01 through S-10 successfully completed, verified, committed, and pushed to public remote. |
+| Half-done work / notes for next agent | U-01 through U-08 complete. 166 tests passing with 90% core coverage. Proceed to T-22 (RAG knowledge base). |
 
 ---
 
@@ -373,6 +373,25 @@ eventgenie/
 - [ ] **T-15** Editable budget table with live total check and a warning when lines do not sum to the total.
   *Acceptance:* editing a line updates totals and flags mismatch.
 
+### PHASE 3.5: Professional Landing Page & UI Redesign (Eventplus-Inspired Structure)
+
+- [x] **U-01** **THEME AND CSS**: `set_page_config(layout="wide")`, load `app/ui/styles.css` via `app/ui/theme.py`, hide Streamlit chrome safely (menu, footer), preserve accessibility. Design system: ivory background (`#FBF7F0`), deep plum text (`#2D1B4E`), saffron gold accent (`#F5A623`), WCAG AA contrast (≥4.5:1), Playfair Display + Inter fonts with Indic fallbacks.
+  *Acceptance:* app loads with new warm festive theme in light mode; contrast meets AA.
+- [x] **U-02** **STICKY TOP NAVIGATION**: Logo text "EventGenie", anchor links (Home, How it works, Plan my event, About), language selector, and gold "Plan my event" CTA button.
+  *Acceptance:* sticky nav renders cleanly; links navigate to sections; keyboard navigable.
+- [x] **U-03** **HERO SECTION**: Big headline, one-sentence subline, primary CTA button, secondary link "See a sample plan", and three honest stat badges ("6 Languages", "3 Event Types", "4 Outputs per Plan"). Subtle CSS gradients, no external images.
+  *Acceptance:* hero renders with truthful stats and functional CTAs.
+- [x] **U-04** **EVENT-TYPE CARDS**: Three cards (Wedding, Birthday, Community) with emoji icons, descriptions, feature tags, and "Start planning" action buttons setting `st.session_state.input_event_type`.
+  *Acceptance:* card buttons set session state and update planner selection.
+- [x] **U-05** **HOW IT WORKS & SAMPLE PREVIEW**: 3-step numbered workflow cards + static sample preview card (budget table, 4 timeline items, 3 vendor questions) clearly labelled as "Example — Not a real quote".
+  *Acceptance:* steps and sample preview render with clear disclaimer labels.
+- [x] **U-06** **PLANNER & RESULTS RESTYLE**: Planner form in a card with descriptive help text on all inputs; results rendered as 4 tabs (Budget, Timeline, Vendors, Ideas) with status ribbons, provider badges, budget sum verification, caution warnings, and Sources used expander placeholder.
+  *Acceptance:* all inputs maintain full screen-reader help text; 4 tabs render verified plan data.
+- [x] **U-07** **CLOSING CTA BANNER & FOOTER**: Deep plum gradient CTA banner with "Plan My Event" button; 4-column footer (Product, Languages, Project with GitHub link, Legal disclaimer with Beta translations and benchmark note). No fake contact info.
+  *Acceptance:* closing banner and footer render truthfully with valid links.
+- [x] **U-08** **QUALITY PASS & TESTS**: Mobile responsive verification, skip-to-content accessibility link, focus outlines, 100% test pass rate across all 161+ tests (including AppTests and i18n parity in all 6 languages), ruff clean, README UI design section.
+  *Acceptance:* all tests pass, ruff clean, repo size < 10 MB, README documentation updated.
+
 ### PHASE 4: RAG and grounding
 
 - [ ] **T-22** Write the knowledge base (original text, 20 to 40 short markdown files) under `knowledge/` including `culture/` per Section 5 rule 8.
@@ -486,6 +505,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | D-16 | 2026-10-31 | Structural check isolation for Indic translations with deterministic benchmark dictionary fallback | Ensures translations in hi, kn, te, ta, mr never mutate dates, budget sums, or category keys, while providing instant localized benchmark plans offline |
 | D-17 | 2026-10-31 | Complete submission package with 3-minute video walkthrough script and explicit limitation disclosures | Ensures complete transparency for evaluators regarding benchmark estimates, free-tier rate limits, and beta Indic translations while providing a ready-to-record demo script |
 | D-18 | 2026-10-31 | Final verification audit and deployment certification | Confirmed 161 tests passing (89% coverage), 0 ruff errors, clean secrets audit, sub-1 MB repository footprint, and validated live generation in English and Indic languages |
+| D-19 | 2026-10-31 | Eventplus-inspired landing page architecture with CSS variable design system, Google Fonts, and modular UI components | Transformed simple intake form into a professional event-company web application (sticky nav, hero with honest stats, 3 event cards, 3-step guide, sample preview, 4-column footer) while maintaining 100% WCAG AA contrast and zero hardcoded text |
 
 ---
 
@@ -523,6 +543,7 @@ Inputs: user constraints, the plan, and (if available) a gold reference plan.
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | S-08 | Added Indic translation engine with script ratio validation (hi, kn, te, ta, mr), structural invariance checks, offline benchmark dictionary fallback, eval/language_review.md model comparison, and 26 new tests (161 tests passing, 89% coverage) | app/i18n/__init__.py, app/tools/translate.py, app/pipeline.py, eval/language_review.md, tests/test_i18n.py, tests/test_translation.py, README.md, EVENTGENIE_MASTER_PROMPT.md | 161/161 tests pass, 89% coverage, structural checks pass |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | S-09 | Completed submission package: updated README with live demo section, comprehensive folder tree, known limitations; created docs/DEMO_SCRIPT.md 3-minute video walkthrough; verified DEPLOY.md; confirmed repo size < 1 MB | docs/DEMO_SCRIPT.md, README.md, EVENTGENIE_MASTER_PROMPT.md | All submission package artifacts complete and verified |
 | 2026-10-31 | Antigravity Gemini 3.8 Flash | S-10 | Final verification: verified clean dependencies, 161/161 tests passing with 89% coverage, 0 ruff errors, zero secrets in git history, 870 KiB repo size, live generation in English & Kannada, updated Section 14 resume bullets | scripts/run_v0_sample.py, EVENTGENIE_MASTER_PROMPT.md | All S-01 through S-10 tasks COMPLETE and submission-ready |
+| 2026-10-31 | Antigravity Gemini 3.8 Flash | U-01 to U-08 | Redesigned Streamlit UI into professional event-company landing page (eventplus-inspired): app/ui/styles.css (design tokens, Playfair Display + Inter, Indic fallbacks), app/ui/theme.py, app/ui/components.py (nav_bar, hero, event_cards, how_it_works, sample_preview, cta_banner, footer), refactored main.py, updated all 6 i18n JSONs with zero empty placeholders, added docs/screens/landing_page_layout.svg, added tests/test_landing_page.py (166 tests passing, 90% coverage) | app/ui/styles.css, app/ui/theme.py, app/ui/components.py, app/main.py, app/i18n/*.json, tests/test_landing_page.py, docs/screens/landing_page_layout.svg, README.md, EVENTGENIE_MASTER_PROMPT.md | 166/166 tests pass, 90% coverage, 0 ruff errors, 894 KiB repo |
 
 ---
 

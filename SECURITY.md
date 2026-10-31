@@ -72,3 +72,4 @@ All user intake parameters are parsed and enforced by **Pydantic v2** models bef
 ## 7. Reporting Security Issues
 
 If you discover a security vulnerability or sensitive information in this repository, please report it privately via GitHub Security Advisories or open an issue marked `[Security]`.
+
